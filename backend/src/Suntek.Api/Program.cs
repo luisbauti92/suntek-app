@@ -32,13 +32,16 @@ builder.Services.AddFastEndpoints()
         };
     });
 
+var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(',') ?? ["http://localhost:5173"];
+
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("SuntekPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -50,7 +53,8 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedAdminUserAsync(scope.ServiceProvider);
 }
 
-app.UseCors();
+app.UseCors("SuntekPolicy");
+
 app.UseFastEndpoints(c =>
 {
     c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
