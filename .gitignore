@@ -1,0 +1,24 @@
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.user/
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*.local
+
+# Mac
+.DS_Store
+
+# IDEs (Rider/Cursor)
+.vscode/
+.rider/

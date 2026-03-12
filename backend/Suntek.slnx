@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Suntek.Api/Suntek.Api.csproj" />
+    <Project Path="src/Suntek.Application/Suntek.Application.csproj" />
+    <Project Path="src/Suntek.Domain/Suntek.Domain.csproj" />
+    <Project Path="src/Suntek.Infrastructure/Suntek.Infrastructure.csproj" />
+  </Folder>
+</Solution>

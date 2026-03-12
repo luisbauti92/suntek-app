@@ -1,0 +1,11 @@
+"Hola. Vamos a inicializar el proyecto SUNTEK siguiendo mis .cursorrules.
+
+Backend: En /backend, crea una Web API usando .NET 10. Genera un archivo .sln y los .csproj necesarios para que sea totalmente compatible con Rider.
+
+Arquitectura: Implementa la estructura base con FastEndpoints. Crea un HealthCheckEndpoint de prueba.
+
+Base de Datos: No crees un servicio de Postgres en Docker porque ya tengo una instancia corriendo. En su lugar, configura el appsettings.json con una cadena de conexión hacia localhost:5432 (o el puerto que uses) y prepara la inyección de dependencia para Entity Framework Core con el provider de PostgreSQL.
+
+Frontend: En /frontend, inicializa un proyecto de React 19 con Vite, TypeScript y Tailwind CSS.
+
+Conectividad: Configura el Middleware de CORS en .NET 10 para permitir peticiones desde el origen de Vite (localhost:5173) y deja listo un cliente de Axios o Fetch en el front."
