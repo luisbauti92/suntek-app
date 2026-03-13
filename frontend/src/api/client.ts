@@ -109,12 +109,29 @@ export interface RegisterStockRequest {
   unitType: UnitType;
 }
 
+export interface AdjustStockRequest {
+  productId: number;
+  quantity: number;
+  reason?: string;
+}
+
+export interface AdjustStockResponse {
+  id: number;
+  sku: string;
+  name: string;
+  quantity: number;
+  wholesaleQuantity: number;
+  retailQuantity: number;
+}
+
 export const inventoryApi = {
   list: () => apiClient.get<InventoryItemDto[]>('/inventory'),
   register: (data: RegisterStockRequest) =>
     apiClient.post<InventoryItemDto>('/inventory', data),
   openBox: (productId: number) =>
     apiClient.post<InventoryItemDto>(`/inventory/${productId}/open-box`, {}),
+  adjustStock: (data: AdjustStockRequest) =>
+    apiClient.post<AdjustStockResponse>('/inventory/adjust-stock', data),
 };
 
 // Sales
@@ -150,8 +167,33 @@ export interface MovementDto {
   saleId: number | null;
 }
 
+const SALES_REPORT_FILENAME = 'Suntek_Sales_Report.xlsx';
+
 export const salesApi = {
   recordSale: (data: RecordSaleRequest) =>
     apiClient.post<RecordSaleResponse>('/sales', data),
-  listMovements: () => apiClient.get<MovementDto[]>('/sales/movements'),
+  listMovements: (startDate?: string, endDate?: string) =>
+    apiClient.get<MovementDto[]>('/sales/movements', {
+      params: {
+        startDate,
+        endDate,
+      },
+    }),
+  /** Exports sales report as Excel; returns blob and triggers browser download. */
+  exportSalesReport: (startDate?: string, endDate?: string) =>
+    apiClient
+      .get<Blob>('/sales/export', {
+        params: { startDate, endDate },
+        responseType: 'blob',
+      })
+      .then((res) => {
+        const blob = res.data;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = SALES_REPORT_FILENAME;
+        a.click();
+        URL.revokeObjectURL(url);
+        return res;
+      }),
 };

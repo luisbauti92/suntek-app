@@ -3,4 +3,6 @@ using Suntek.Application.Common.Models;
 
 namespace Suntek.Application.Sales.Queries;
 
-public record GetMovementHistoryQuery : IRequest<IReadOnlyList<MovementDto>>;
+public record GetMovementHistoryQuery(
+    DateTime? StartDateUtc,
+    DateTime? EndDateUtc) : IRequest<IReadOnlyList<MovementDto>>;

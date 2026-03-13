@@ -9,7 +9,10 @@ public class GetMovementHistoryQueryHandler(IInventoryMovementRepository movemen
 {
     public async Task<IReadOnlyList<MovementDto>> Handle(GetMovementHistoryQuery request, CancellationToken ct)
     {
-        var movements = await movementRepository.GetAllOrderedByDateDescAsync(ct);
+        var movements = await movementRepository.GetByDateRangeOrderedByDateDescAsync(
+            request.StartDateUtc,
+            request.EndDateUtc,
+            ct);
         return movements
             .Select(m => new MovementDto(
                 m.Id,

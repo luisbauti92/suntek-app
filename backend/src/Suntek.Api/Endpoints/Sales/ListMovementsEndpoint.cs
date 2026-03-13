@@ -5,6 +5,12 @@ using Suntek.Domain.Enums;
 
 namespace Suntek.Api.Endpoints.Sales;
 
+public class MovementHistoryRequest
+{
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+}
+
 public class MovementDtoResponse
 {
     public int Id { get; set; }
@@ -21,7 +27,7 @@ public class MovementDtoResponse
     public int? SaleId { get; set; }
 }
 
-public class ListMovementsEndpoint(IMediator mediator) : EndpointWithoutRequest<List<MovementDtoResponse>>
+public class ListMovementsEndpoint(IMediator mediator) : Endpoint<MovementHistoryRequest, List<MovementDtoResponse>>
 {
     public override void Configure()
     {
@@ -29,9 +35,11 @@ public class ListMovementsEndpoint(IMediator mediator) : EndpointWithoutRequest<
         Roles(AppRoles.Admin, AppRoles.Operator);
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(MovementHistoryRequest req, CancellationToken ct)
     {
-        var movements = await mediator.Send(new GetMovementHistoryQuery(), ct);
+        var movements = await mediator.Send(
+            new GetMovementHistoryQuery(req.StartDate, req.EndDate),
+            ct);
         Response = movements.Select(m => new MovementDtoResponse
         {
             Id = m.Id,

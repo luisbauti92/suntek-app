@@ -29,8 +29,10 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ISaleRepository, SaleRepository>();
         services.AddScoped<IInventoryMovementRepository, InventoryMovementRepository>();
+        services.AddScoped<Application.Common.Interfaces.IExcelService, ExcelService>();
         services.AddScoped<IAuthService, AuthService>();
 
         return services;

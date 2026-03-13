@@ -5,6 +5,8 @@ import { inventoryApi, salesApi } from '../api/client';
 import { ProductForm } from '../components/ProductForm';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { SalesEntryModal } from '../components/SalesEntryModal';
+import { AddStockModal } from '../components/AddStockModal';
+import { MovementFilterBar, type MovementFilterValue } from '../components/MovementFilterBar';
 import type { InventoryItemDto, MovementDto } from '../api/client';
 
 function formatRetailQuantity(item: InventoryItemDto): string {
@@ -23,9 +25,16 @@ export function InventoryDashboard() {
   const [activeTab, setActiveTab] = useState<'warehouse' | 'storefront' | 'movements'>('warehouse');
   const [openBoxProductId, setOpenBoxProductId] = useState<number | null>(null);
   const [openBoxLoading, setOpenBoxLoading] = useState(false);
+  const [addStockItem, setAddStockItem] = useState<InventoryItemDto | null>(null);
   const [salesModalOpen, setSalesModalOpen] = useState(false);
   const [movements, setMovements] = useState<MovementDto[]>([]);
   const [movementsLoading, setMovementsLoading] = useState(false);
+  const [movementFilter, setMovementFilter] = useState<MovementFilterValue>({
+    option: 'last30',
+    startDate: undefined,
+    endDate: undefined,
+  });
+  const [exportExcelLoading, setExportExcelLoading] = useState(false);
 
   const refreshItems = useCallback(() => {
     setLoading(true);
@@ -40,14 +49,15 @@ export function InventoryDashboard() {
     refreshItems();
   }, [refreshItems]);
 
-  const refreshMovements = useCallback(() => {
+  const refreshMovements = useCallback((filter?: MovementFilterValue) => {
+    const f = filter ?? movementFilter;
     setMovementsLoading(true);
     salesApi
-      .listMovements()
+      .listMovements(f.startDate, f.endDate)
       .then((res) => setMovements(res.data))
       .catch(() => setMovements([]))
       .finally(() => setMovementsLoading(false));
-  }, []);
+  }, [movementFilter]);
 
   useEffect(() => {
     if (activeTab === 'movements') refreshMovements();
@@ -55,6 +65,18 @@ export function InventoryDashboard() {
 
   function handleOpenBoxClick(productId: number) {
     setOpenBoxProductId(productId);
+  }
+
+  async function handleExportExcel() {
+    setExportExcelLoading(true);
+    try {
+      await salesApi.exportSalesReport(movementFilter.startDate, movementFilter.endDate);
+      toast.success('Sales report in Bs has been generated and downloaded.');
+    } catch {
+      toast.error('Export failed.');
+    } finally {
+      setExportExcelLoading(false);
+    }
   }
 
   async function handleOpenBoxConfirm() {
@@ -172,6 +194,13 @@ export function InventoryDashboard() {
           isLoading={openBoxLoading}
         />
 
+        <AddStockModal
+          isOpen={addStockItem != null}
+          onClose={() => setAddStockItem(null)}
+          onSuccess={() => { refreshItems(); if (activeTab === 'movements') refreshMovements(); }}
+          item={addStockItem}
+        />
+
         {loading && activeTab !== 'movements' ? (
           <div className="animate-pulse bg-white rounded-lg border border-slate-200 p-8">
             <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
@@ -183,6 +212,38 @@ export function InventoryDashboard() {
           </div>
         ) : activeTab === 'movements' ? (
           <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
+              <MovementFilterBar
+                value={movementFilter}
+                onChange={(val) => {
+                  setMovementFilter(val);
+                  refreshMovements(val);
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                disabled={exportExcelLoading}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+              >
+                {exportExcelLoading ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export Excel
+                  </>
+                )}
+              </button>
+            </div>
             {movementsLoading ? (
               <div className="animate-pulse p-8">
                 <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
@@ -258,13 +319,24 @@ export function InventoryDashboard() {
                       {item.wholesaleQuantity * item.rollsPerBox}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => handleOpenBoxClick(item.id)}
-                        disabled={item.wholesaleQuantity < 1 || openBoxLoading}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                      >
-                        Open Box
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setAddStockItem(item)}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition"
+                          title="Add Stock"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleOpenBoxClick(item.id)}
+                          disabled={item.wholesaleQuantity < 1 || openBoxLoading}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                          Open Box
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -291,8 +363,8 @@ export function InventoryDashboard() {
                     <td className="px-4 py-3 text-sm font-medium text-slate-700">
                       {formatRetailQuantity(item)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-600">${item.pricePerRoll.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600">${item.pricePerMeter.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-600">Bs {item.pricePerRoll.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-600">Bs {item.pricePerMeter.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
