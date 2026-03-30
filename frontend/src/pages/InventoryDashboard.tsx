@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { inventoryApi, salesApi } from '../api/client';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { ProductForm } from '../components/ProductForm';
+import { EditProductModal } from '../components/EditProductModal';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { SalesEntryModal } from '../components/SalesEntryModal';
 import { AddStockModal } from '../components/AddStockModal';
@@ -43,6 +45,7 @@ export function InventoryDashboard() {
     endDate: undefined,
   });
   const [exportExcelLoading, setExportExcelLoading] = useState(false);
+  const [editProductItem, setEditProductItem] = useState<InventoryItemDto | null>(null);
 
   const refreshItems = useCallback(() => {
     setLoading(true);
@@ -210,6 +213,16 @@ export function InventoryDashboard() {
           item={addStockItem}
         />
 
+        <EditProductModal
+          item={editProductItem}
+          isOpen={editProductItem != null}
+          onClose={() => setEditProductItem(null)}
+          onSuccess={() => {
+            refreshItems();
+            if (activeTab === 'movements') refreshMovements();
+          }}
+        />
+
         {loading && activeTab !== 'movements' ? (
           <div className="animate-pulse bg-white rounded-lg border border-slate-200 p-8">
             <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
@@ -262,6 +275,15 @@ export function InventoryDashboard() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
+                          type="button"
+                          onClick={() => setEditProductItem(item)}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+                          title={t('editProduct.editTooltip')}
+                        >
+                          <Pencil className="h-4 w-4" aria-hidden />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => setAddStockItem(item)}
                           className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition"
                           title={t('dashboard.addStockTitle')}
@@ -271,6 +293,7 @@ export function InventoryDashboard() {
                           </svg>
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleOpenBoxClick(item.id)}
                           disabled={item.wholesaleQuantity < 1 || openBoxLoading}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
@@ -294,6 +317,7 @@ export function InventoryDashboard() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.available')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.priceRoll')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.priceM')}</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -310,6 +334,16 @@ export function InventoryDashboard() {
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-600">Bs {item.pricePerRoll.toFixed(2)}</td>
                     <td className="px-4 py-3 text-sm text-slate-600">Bs {item.pricePerMeter.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => setEditProductItem(item)}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+                        title={t('editProduct.editTooltip')}
+                      >
+                        <Pencil className="h-4 w-4" aria-hidden />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -10,6 +10,8 @@ public class RegisterStockCommandHandler(
     IProductRepository productRepository,
     IInventoryMovementRepository movementRepository) : IRequestHandler<RegisterStockCommand, ProductDto>
 {
+    private static decimal Round2(decimal v) => decimal.Round(v, 2, MidpointRounding.AwayFromZero);
+
     public async Task<ProductDto> Handle(RegisterStockCommand request, CancellationToken ct)
     {
         var existing = await productRepository.GetBySkuAsync(request.Sku, ct);
@@ -41,10 +43,10 @@ public class RegisterStockCommandHandler(
             Sku = request.Sku,
             Name = request.Name,
             Quantity = request.Quantity,
-            Length = request.Length,
-            Width = request.Width,
-            PricePerRoll = request.PricePerRoll,
-            PricePerMeter = request.PricePerMeter,
+            Length = Round2(request.Length),
+            Width = Round2(request.Width),
+            PricePerRoll = Round2(request.PricePerRoll),
+            PricePerMeter = Round2(request.PricePerMeter),
             RollsPerBox = request.RollsPerBox,
             UnitType = request.UnitType,
             WholesaleQuantity = request.Quantity,

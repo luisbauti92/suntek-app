@@ -22,6 +22,11 @@ public class ProductRepository(AppDbContext db) : IProductRepository
         return await db.Products.FirstOrDefaultAsync(x => x.Sku == sku, ct);
     }
 
+    public async Task<bool> IsSkuTakenByOtherAsync(string sku, int excludeProductId, CancellationToken ct = default)
+    {
+        return await db.Products.AnyAsync(x => x.Sku == sku && x.Id != excludeProductId, ct);
+    }
+
     public async Task<Product> AddAsync(Product product, CancellationToken ct = default)
     {
         db.Products.Add(product);
