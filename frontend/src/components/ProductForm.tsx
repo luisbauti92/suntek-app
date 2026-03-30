@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { inventoryApi, type RegisterStockRequest, type UnitType } from '../api/client';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -21,20 +22,25 @@ const initialValues: RegisterStockRequest = {
 };
 
 export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
+  const { t } = useLanguage();
   const [form, setForm] = useState<RegisterStockRequest>(initialValues);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
-    const parsed =
-      ['quantity', 'length', 'width', 'pricePerRoll', 'pricePerMeter', 'rollsPerBox'].includes(
-        name
-      )
-        ? (name === 'rollsPerBox' ? parseInt(value, 10) || 0 : parseFloat(value) || 0)
-        : value;
+    const parsed = [
+      'quantity',
+      'length',
+      'width',
+      'pricePerRoll',
+      'pricePerMeter',
+      'rollsPerBox',
+    ].includes(name)
+      ? name === 'rollsPerBox'
+        ? parseInt(value, 10) || 0
+        : parseFloat(value) || 0
+      : value;
     setForm((prev) => ({ ...prev, [name]: parsed }));
     setError('');
   }
@@ -48,9 +54,9 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
       setForm(initialValues);
       onSuccess();
       onClose();
-      toast.success('Product registered successfully.');
+      toast.success(t('productForm.registerSuccess'));
     } catch (err: unknown) {
-      let msg = 'Failed to register product.';
+      let msg = t('productForm.registerFailed');
       if (err && typeof err === 'object' && 'response' in err) {
         const res = (err as { response?: { data?: unknown } }).response?.data;
         if (res && typeof res === 'object' && 'message' in res) {
@@ -69,12 +75,8 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
       <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-200/80 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Add Product
-          </h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Register a new product in inventory
-          </p>
+          <h2 className="text-lg font-semibold text-slate-900">{t('productForm.title')}</h2>
+          <p className="text-sm text-slate-500 mt-0.5">{t('productForm.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -86,10 +88,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="sku"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
+              <label htmlFor="sku" className="block text-sm font-medium text-slate-700 mb-1">
                 SKU
               </label>
               <input
@@ -100,15 +99,12 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="e.g. SKU-001"
+                placeholder={t('productForm.skuPlaceholder')}
               />
             </div>
             <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Name
+              <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('dashboard.name')}
               </label>
               <input
                 id="name"
@@ -118,17 +114,14 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Product name"
+                placeholder={t('productForm.namePlaceholder')}
               />
             </div>
           </div>
 
           <div>
-            <label
-              htmlFor="quantity"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Quantity
+            <label htmlFor="quantity" className="block text-sm font-medium text-slate-700 mb-1">
+              {t('productForm.quantity')}
             </label>
             <input
               id="quantity"
@@ -146,11 +139,8 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="length"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Length (m)
+              <label htmlFor="length" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.length')}
               </label>
               <input
                 id="length"
@@ -166,11 +156,8 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
               />
             </div>
             <div>
-              <label
-                htmlFor="width"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Width (m)
+              <label htmlFor="width" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.width')}
               </label>
               <input
                 id="width"
@@ -189,11 +176,8 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="rollsPerBox"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Rolls per box
+              <label htmlFor="rollsPerBox" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.rollsPerBox')}
               </label>
               <input
                 id="rollsPerBox"
@@ -209,11 +193,8 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
               />
             </div>
             <div>
-              <label
-                htmlFor="unitType"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Unit type
+              <label htmlFor="unitType" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.unitType')}
               </label>
               <select
                 id="unitType"
@@ -225,19 +206,16 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 }}
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="Meters">Meters (vinyl rolls)</option>
-                <option value="Units">Units (tools/accessories)</option>
+                <option value="Meters">{t('productForm.unitMeters')}</option>
+                <option value="Units">{t('productForm.unitUnits')}</option>
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="pricePerRoll"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Price per roll
+              <label htmlFor="pricePerRoll" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.pricePerRoll')}
               </label>
               <input
                 id="pricePerRoll"
@@ -253,11 +231,8 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
               />
             </div>
             <div>
-              <label
-                htmlFor="pricePerMeter"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Price per meter
+              <label htmlFor="pricePerMeter" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.pricePerMeter')}
               </label>
               <input
                 id="pricePerMeter"
@@ -280,14 +255,14 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
               onClick={onClose}
               className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
             >
-              {isSubmitting ? 'Registering…' : 'Register Product'}
+              {isSubmitting ? t('productForm.registering') : t('productForm.registerProduct')}
             </button>
           </div>
         </form>

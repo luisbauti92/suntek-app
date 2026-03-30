@@ -165,6 +165,8 @@ export interface MovementDto {
   retailQuantityAfter: number | null;
   createdAt: string;
   saleId: number | null;
+  saleUnitPriceBs?: number | null;
+  saleTotalBs?: number | null;
 }
 
 const SALES_REPORT_FILENAME = 'Suntek_Sales_Report.xlsx';

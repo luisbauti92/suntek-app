@@ -1,11 +1,38 @@
-"Hola. Vamos a inicializar el proyecto SUNTEK siguiendo mis .cursorrules.
+# SUNTEK Project Rules & Guidelines
 
-Backend: En /backend, crea una Web API usando .NET 10. Genera un archivo .sln y los .csproj necesarios para que sea totalmente compatible con Rider.
+## 1. General Context
+- **Project Name:** SUNTEK (Inventory & Sales Management System).
+- **Location:** Santa Cruz, Bolivia (Timezone: UTC-4).
+- **Currency:** Always use "Bs" (Bolivianos). Format: `Bs 10.50`.
+- **Primary Language for Code:** English (variables, classes, comments).
+- **Primary Language for UI:** Spanish (labels, messages, notifications).
 
-Arquitectura: Implementa la estructura base con FastEndpoints. Crea un HealthCheckEndpoint de prueba.
+## 2. Backend Tech Stack (.NET 10)
+- **Architecture:** Clean Architecture (Domain, Application, Infrastructure, API).
+- **Patterns:** MediatR (CQRS), FastEndpoints (API), Entity Framework Core (PostgreSQL 16).
+- **Strict Rule:** NEVER put business or file generation logic (like ClosedXML) in the API/Endpoint layer. Use the Infrastructure or Application layers and inject via interfaces.
+- **Dates:** Always use `DateTime.UtcNow`. Handle local conversion (UTC-4) only at the presentation or specific report filtering layer.
+- **Transactions:** Inventory updates and sales records MUST be atomic (use Transactions).
 
-Base de Datos: No crees un servicio de Postgres en Docker porque ya tengo una instancia corriendo. En su lugar, configura el appsettings.json con una cadena de conexión hacia localhost:5432 (o el puerto que uses) y prepara la inyección de dependencia para Entity Framework Core con el provider de PostgreSQL.
+## 3. Frontend Tech Stack (React 19 + Vite)
+- **Styling:** Tailwind CSS (No heavy UI libraries like MUI/AntD).
+- **Aesthetic:** "SaaS-like", minimalist, professional.
+- **Palette:** - Backgrounds: `slate-50` for pages, `white` for cards.
+  - Primary: `indigo-600` (Actions/Buttons).
+  - Success/Sales: `emerald-600`.
+  - Text: `slate-900`.
+- **Components:** - Use `rounded-xl` for cards and `rounded-lg` for buttons.
+  - Use `shadow-sm` for depth.
+  - Follow shadcn/ui and Tremor aesthetic (clean lines, subtle borders).
+- **State Management:** Use Hooks and context where necessary. Keep components small and reusable.
 
-Frontend: En /frontend, inicializa un proyecto de React 19 con Vite, TypeScript y Tailwind CSS.
+## 4. UI/UX Patterns for "New Air"
+- **Dashboards:** Use KPI cards (Summary cards) before large tables.
+- **Tables:** Use `divide-y divide-slate-100`. Group data by date where possible.
+- **Icons:** Use Lucide-React or Heroicons. Use icons to represent actions (e.g., 🛒 for Sale, 📦 for Stock In).
+- **Empty States:** Always provide an "Empty State" component if a list or filter has no data.
 
-Conectividad: Configura el Middleware de CORS en .NET 10 para permitir peticiones desde el origen de Vite (localhost:5173) y deja listo un cliente de Axios o Fetch en el front."
+## 5. Deployment (Docker)
+- **Environment:** Local store deployment on Windows via Docker Desktop.
+- **Persistence:** Always assume data is persisted via Docker Volumes (`suntek_postgres_data`).
+- **Optimization:** Use multi-stage builds (SDK for build, ASP.NET/Nginx for runtime).

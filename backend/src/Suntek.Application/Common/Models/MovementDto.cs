@@ -14,4 +14,6 @@ public record MovementDto(
     int? WholesaleQuantityAfter,
     decimal? RetailQuantityAfter,
     DateTime CreatedAt,
-    int? SaleId);
+    int? SaleId,
+    decimal? SaleUnitPriceBs,
+    decimal? SaleTotalBs);
