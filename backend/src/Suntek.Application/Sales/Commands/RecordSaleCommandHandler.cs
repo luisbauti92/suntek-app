@@ -11,6 +11,8 @@ public class RecordSaleCommandHandler(
     ISaleRepository saleRepository,
     IInventoryMovementRepository movementRepository) : IRequestHandler<RecordSaleCommand, RecordSaleResult>
 {
+    private static decimal Round2(decimal v) => decimal.Round(v, 2, MidpointRounding.AwayFromZero);
+
     public async Task<RecordSaleResult> Handle(RecordSaleCommand request, CancellationToken ct)
     {
         var product = await productRepository.GetByIdAsync(request.ProductId, ct);
@@ -33,14 +35,15 @@ public class RecordSaleCommandHandler(
         }
 
         product.UpdatedAt = DateTime.UtcNow;
-        var totalPrice = request.Quantity * request.UnitPrice;
+        var unitPrice = Round2(request.UnitPrice);
+        var totalPrice = Round2(request.Quantity * unitPrice);
 
         var sale = new Sale
         {
             ProductId = product.Id,
             Quantity = request.Quantity,
             SaleType = request.SaleType,
-            UnitPrice = request.UnitPrice,
+            UnitPrice = unitPrice,
             TotalPrice = totalPrice,
             CreatedAt = DateTime.UtcNow
         };

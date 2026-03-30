@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { salesApi, type SaleType } from '../api/client';
 import type { InventoryItemDto } from '../api/client';
 import { useLanguage } from '../contexts/LanguageContext';
+import { roundMoney2 } from '../utils/money';
 
 interface SalesEntryModalProps {
   isOpen: boolean;
@@ -46,8 +47,8 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
       setError(t('salesModal.errQtyPositive'));
       return;
     }
-    const price = Number(unitPrice);
-    if (price < 0) {
+    const price = roundMoney2(Number(unitPrice));
+    if (price < 0 || Number.isNaN(price)) {
       setError(t('salesModal.errPriceNegative'));
       return;
     }
@@ -188,8 +189,13 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                 type="number"
                 min={0}
                 step={0.01}
+                inputMode="decimal"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
+                onBlur={() => {
+                  const v = parseFloat(unitPrice);
+                  if (!Number.isNaN(v)) setUnitPrice(String(roundMoney2(v)));
+                }}
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="0.00"

@@ -1,9 +1,0 @@
-"Hola. Vamos a inicializar el proyecto SUNTEK.
-
-En la carpeta /backend, crea una Web API de .NET 10 con un archivo de solución .sln para que pueda abrirlo en Rider. Configura un endpoint de prueba con FastEndpoints.
-
-En la carpeta /frontend, inicializa un proyecto de React con Vite y TypeScript. Configura Tailwind CSS.
-
-Crea un docker-compose.yml en la raíz para levantar una base de datos PostgreSQL.
-
-Asegúrate de que el backend tenga habilitado CORS para el frontend."

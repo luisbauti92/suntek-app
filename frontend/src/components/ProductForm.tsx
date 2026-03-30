@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { inventoryApi, type RegisterStockRequest, type UnitType } from '../api/client';
 import { useLanguage } from '../contexts/LanguageContext';
+import { roundMoney2 } from '../utils/money';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -50,7 +51,13 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
     setError('');
     setIsSubmitting(true);
     try {
-      await inventoryApi.register(form);
+      await inventoryApi.register({
+        ...form,
+        length: roundMoney2(Number(form.length)),
+        width: roundMoney2(Number(form.width)),
+        pricePerRoll: roundMoney2(Number(form.pricePerRoll)),
+        pricePerMeter: roundMoney2(Number(form.pricePerMeter)),
+      });
       setForm(initialValues);
       onSuccess();
       onClose();
@@ -148,8 +155,12 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 type="number"
                 min={0}
                 step={0.01}
+                inputMode="decimal"
                 value={form.length || ''}
                 onChange={handleChange}
+                onBlur={() =>
+                  setForm((prev) => ({ ...prev, length: roundMoney2(Number(prev.length)) }))
+                }
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="0"
@@ -165,8 +176,12 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 type="number"
                 min={0}
                 step={0.01}
+                inputMode="decimal"
                 value={form.width || ''}
                 onChange={handleChange}
+                onBlur={() =>
+                  setForm((prev) => ({ ...prev, width: roundMoney2(Number(prev.width)) }))
+                }
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="0"
@@ -223,8 +238,15 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 type="number"
                 min={0}
                 step={0.01}
+                inputMode="decimal"
                 value={form.pricePerRoll || ''}
                 onChange={handleChange}
+                onBlur={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    pricePerRoll: roundMoney2(Number(prev.pricePerRoll)),
+                  }))
+                }
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="0.00"
@@ -240,8 +262,15 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 type="number"
                 min={0}
                 step={0.01}
+                inputMode="decimal"
                 value={form.pricePerMeter || ''}
                 onChange={handleChange}
+                onBlur={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    pricePerMeter: roundMoney2(Number(prev.pricePerMeter)),
+                  }))
+                }
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="0.00"

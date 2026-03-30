@@ -109,6 +109,13 @@ export interface RegisterStockRequest {
   unitType: UnitType;
 }
 
+export interface UpdateProductRequest {
+  sku: string;
+  name: string;
+  pricePerRoll: number;
+  pricePerMeter: number;
+}
+
 export interface AdjustStockRequest {
   productId: number;
   quantity: number;
@@ -128,6 +135,8 @@ export const inventoryApi = {
   list: () => apiClient.get<InventoryItemDto[]>('/inventory'),
   register: (data: RegisterStockRequest) =>
     apiClient.post<InventoryItemDto>('/inventory', data),
+  update: (id: number, data: UpdateProductRequest) =>
+    apiClient.put<InventoryItemDto>(`/inventory/${id}`, data),
   openBox: (productId: number) =>
     apiClient.post<InventoryItemDto>(`/inventory/${productId}/open-box`, {}),
   adjustStock: (data: AdjustStockRequest) =>
