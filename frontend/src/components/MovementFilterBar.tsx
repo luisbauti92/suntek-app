@@ -1,3 +1,5 @@
+import { useLanguage } from '../contexts/LanguageContext';
+
 type MovementFilterOption = 'today' | 'thisWeek' | 'last30' | 'custom';
 
 export interface MovementFilterValue {
@@ -9,6 +11,7 @@ export interface MovementFilterValue {
 interface MovementFilterBarProps {
   value: MovementFilterValue;
   onChange: (value: MovementFilterValue) => void;
+  embedded?: boolean;
 }
 
 function toDateInputValue(date: Date): string {
@@ -18,7 +21,9 @@ function toDateInputValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function MovementFilterBar({ value, onChange }: MovementFilterBarProps) {
+export function MovementFilterBar({ value, onChange, embedded = false }: MovementFilterBarProps) {
+  const { t } = useLanguage();
+
   const handlePresetChange = (option: MovementFilterOption) => {
     const now = new Date();
     let start: Date;
@@ -32,7 +37,7 @@ export function MovementFilterBar({ value, onChange }: MovementFilterBarProps) {
     }
 
     if (option === 'thisWeek') {
-      const day = now.getDay(); // 0 (Sun) - 6 (Sat)
+      const day = now.getDay();
       const diffToMonday = day === 0 ? -6 : 1 - day;
       start = new Date(now);
       start.setDate(now.getDate() + diffToMonday);
@@ -54,7 +59,6 @@ export function MovementFilterBar({ value, onChange }: MovementFilterBarProps) {
       return;
     }
 
-    // custom
     onChange({ option, startDate: value.startDate, endDate: value.endDate });
   };
 
@@ -71,75 +75,68 @@ export function MovementFilterBar({ value, onChange }: MovementFilterBarProps) {
   const startInputValue = value.startDate ? toDateInputValue(new Date(value.startDate)) : '';
   const endInputValue = value.endDate ? toDateInputValue(new Date(value.endDate)) : '';
 
+  const pillBase = 'px-3 py-1.5 rounded-full text-xs font-medium border transition';
+  const pillInactive =
+    'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50';
+  const pillActive = 'bg-indigo-600 text-white border-indigo-600 shadow-sm';
+
+  const wrapperClass = embedded
+    ? 'flex flex-wrap items-center gap-3'
+    : 'flex flex-wrap items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50';
+
   return (
-    <div className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
-      <span className="text-xs font-medium text-slate-600 uppercase tracking-wide">
-        Filter by date
+    <div className={wrapperClass}>
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+        {t('filter.period')}
       </span>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         <button
           type="button"
           onClick={() => handlePresetChange('today')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
-            value.option === 'today'
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-          }`}
+          className={`${pillBase} ${value.option === 'today' ? pillActive : pillInactive}`}
         >
-          Today
+          {t('filter.today')}
         </button>
         <button
           type="button"
           onClick={() => handlePresetChange('thisWeek')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
-            value.option === 'thisWeek'
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-          }`}
+          className={`${pillBase} ${value.option === 'thisWeek' ? pillActive : pillInactive}`}
         >
-          This Week
+          {t('filter.thisWeek')}
         </button>
         <button
           type="button"
           onClick={() => handlePresetChange('last30')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
-            value.option === 'last30'
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-          }`}
+          className={`${pillBase} ${value.option === 'last30' ? pillActive : pillInactive}`}
         >
-          Last 30 Days
+          {t('filter.last30')}
         </button>
         <button
           type="button"
           onClick={() => handlePresetChange('custom')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
-            value.option === 'custom'
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-          }`}
+          className={`${pillBase} ${value.option === 'custom' ? pillActive : pillInactive}`}
         >
-          Custom Range
+          {t('filter.custom')}
         </button>
       </div>
       {value.option === 'custom' && (
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="text-xs text-slate-600">
-            From
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="text-xs text-slate-600 flex items-center gap-1.5">
+            {t('filter.from')}
             <input
               type="date"
               value={startInputValue}
               onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
-              className="ml-1 px-2 py-1 rounded border border-slate-300 text-xs"
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs shadow-sm"
             />
           </label>
-          <label className="text-xs text-slate-600">
-            To
+          <label className="text-xs text-slate-600 flex items-center gap-1.5">
+            {t('filter.to')}
             <input
               type="date"
               value={endInputValue}
               onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
-              className="ml-1 px-2 py-1 rounded border border-slate-300 text-xs"
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs shadow-sm"
             />
           </label>
         </div>
@@ -147,4 +144,3 @@ export function MovementFilterBar({ value, onChange }: MovementFilterBarProps) {
     </div>
   );
 }
-

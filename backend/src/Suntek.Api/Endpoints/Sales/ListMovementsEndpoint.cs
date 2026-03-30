@@ -25,6 +25,8 @@ public class MovementDtoResponse
     public decimal? RetailQuantityAfter { get; set; }
     public DateTime CreatedAt { get; set; }
     public int? SaleId { get; set; }
+    public decimal? SaleUnitPriceBs { get; set; }
+    public decimal? SaleTotalBs { get; set; }
 }
 
 public class ListMovementsEndpoint(IMediator mediator) : Endpoint<MovementHistoryRequest, List<MovementDtoResponse>>
@@ -53,7 +55,9 @@ public class ListMovementsEndpoint(IMediator mediator) : Endpoint<MovementHistor
             WholesaleQuantityAfter = m.WholesaleQuantityAfter,
             RetailQuantityAfter = m.RetailQuantityAfter,
             CreatedAt = m.CreatedAt,
-            SaleId = m.SaleId
+            SaleId = m.SaleId,
+            SaleUnitPriceBs = m.SaleUnitPriceBs,
+            SaleTotalBs = m.SaleTotalBs
         }).ToList();
         await Send.OkAsync(Response, ct);
     }

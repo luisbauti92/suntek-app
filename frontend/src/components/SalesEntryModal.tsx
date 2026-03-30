@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { salesApi, type SaleType } from '../api/client';
 import type { InventoryItemDto } from '../api/client';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SalesEntryModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface SalesEntryModalProps {
 }
 
 export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesEntryModalProps) {
+  const { t } = useLanguage();
   const [productId, setProductId] = useState<number | ''>('');
   const [saleType, setSaleType] = useState<SaleType>('Retail');
   const [quantity, setQuantity] = useState<string>('');
@@ -36,17 +38,17 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
     e.preventDefault();
     setError('');
     if (productId === '' || !quantity || !unitPrice) {
-      setError('Select a product and enter quantity and unit price.');
+      setError(t('salesModal.errSelectProduct'));
       return;
     }
     const q = saleType === 'Wholesale' ? Math.floor(Number(quantity)) : Number(quantity);
     if (q <= 0) {
-      setError('Quantity must be greater than 0.');
+      setError(t('salesModal.errQtyPositive'));
       return;
     }
     const price = Number(unitPrice);
     if (price < 0) {
-      setError('Unit price cannot be negative.');
+      setError(t('salesModal.errPriceNegative'));
       return;
     }
     setIsSubmitting(true);
@@ -59,17 +61,17 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
       })
       .then((res) => {
         if (res.data.success) {
-          toast.success('Sale recorded. Stock updated.');
+          toast.success(t('salesModal.toastSuccess'));
           setProductId('');
           setQuantity('');
           setUnitPrice('');
           onSuccess();
           onClose();
         } else {
-          setError(res.data.errorMessage ?? 'Failed to record sale.');
+          setError(res.data.errorMessage ?? t('salesModal.failed'));
         }
       })
-      .catch(() => setError('Failed to record sale.'))
+      .catch(() => setError(t('salesModal.failed')))
       .finally(() => setIsSubmitting(false));
   }
 
@@ -82,10 +84,12 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
     setSearch('');
   }
 
-  function handleSaleTypeChange(t: SaleType) {
-    setSaleType(t);
+  function handleSaleTypeChange(typ: SaleType) {
+    setSaleType(typ);
     if (selectedProduct) {
-      setUnitPrice(t === 'Wholesale' ? String(selectedProduct.pricePerRoll) : String(selectedProduct.pricePerMeter));
+      setUnitPrice(
+        typ === 'Wholesale' ? String(selectedProduct.pricePerRoll) : String(selectedProduct.pricePerMeter)
+      );
     }
   }
 
@@ -95,8 +99,8 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
       <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
-          <h2 className="text-lg font-semibold text-slate-900">Record Sale</h2>
-          <p className="text-sm text-slate-500 mt-0.5">Enter sale details and update stock</p>
+          <h2 className="text-lg font-semibold text-slate-900">{t('salesModal.title')}</h2>
+          <p className="text-sm text-slate-500 mt-0.5">{t('salesModal.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -107,7 +111,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Product</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('salesModal.product')}</label>
             {selectedProduct ? (
               <div className="flex items-center justify-between gap-2 p-3 rounded-lg border border-slate-200 bg-slate-50">
                 <span className="text-sm font-medium text-slate-900">
@@ -118,7 +122,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                   onClick={() => setProductId('')}
                   className="text-xs text-indigo-600 hover:text-indigo-700"
                 >
-                  Change
+                  {t('salesModal.change')}
                 </button>
               </div>
             ) : (
@@ -127,7 +131,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by SKU or name..."
+                  placeholder={t('salesModal.searchPlaceholder')}
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
                 <ul className="mt-1 max-h-40 overflow-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
@@ -143,7 +147,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                     </li>
                   ))}
                   {filteredProducts.length === 0 && (
-                    <li className="px-3 py-2 text-sm text-slate-500">No products match</li>
+                    <li className="px-3 py-2 text-sm text-slate-500">{t('salesModal.noMatch')}</li>
                   )}
                 </ul>
               </>
@@ -151,21 +155,21 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Sale type</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('salesModal.saleType')}</label>
             <select
               value={saleType}
               onChange={(e) => handleSaleTypeChange(e.target.value as SaleType)}
               className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="Wholesale">Box (wholesale)</option>
-              <option value="Retail">Meter / Unit (retail)</option>
+              <option value="Wholesale">{t('salesModal.wholesaleOption')}</option>
+              <option value="Retail">{t('salesModal.retailOption')}</option>
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                {saleType === 'Wholesale' ? 'Boxes' : 'Quantity (m or units)'}
+                {saleType === 'Wholesale' ? t('salesModal.boxes') : t('salesModal.qtyRetail')}
               </label>
               <input
                 type="number"
@@ -179,7 +183,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Unit price</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('salesModal.unitPrice')}</label>
               <input
                 type="number"
                 min={0}
@@ -199,14 +203,14 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
               onClick={onClose}
               className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !productId}
               className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
             >
-              {isSubmitting ? 'Recording…' : 'Record Sale'}
+              {isSubmitting ? t('salesModal.recording') : t('salesModal.recordSale')}
             </button>
           </div>
         </form>

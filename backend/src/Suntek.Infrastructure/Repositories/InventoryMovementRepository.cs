@@ -32,6 +32,7 @@ public class InventoryMovementRepository(AppDbContext db) : IInventoryMovementRe
 
         return await db.InventoryMovements
             .Include(x => x.Product)
+            .Include(x => x.Sale)
             .Where(x => x.CreatedAt >= effectiveStartUtc && x.CreatedAt <= effectiveEndUtc)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(ct);

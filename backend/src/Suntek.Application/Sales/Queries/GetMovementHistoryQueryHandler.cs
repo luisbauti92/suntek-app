@@ -26,7 +26,9 @@ public class GetMovementHistoryQueryHandler(IInventoryMovementRepository movemen
                 m.WholesaleQuantityAfter,
                 m.RetailQuantityAfter,
                 m.CreatedAt,
-                m.SaleId))
+                m.SaleId,
+                m.Sale != null ? m.Sale.UnitPrice : null,
+                m.Sale != null ? m.Sale.TotalPrice : null))
             .ToList();
     }
 }

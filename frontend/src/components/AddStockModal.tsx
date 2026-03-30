@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { inventoryApi } from '../api/client';
 import type { InventoryItemDto } from '../api/client';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AddStockModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface AddStockModalProps {
 }
 
 export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModalProps) {
+  const { t } = useLanguage();
   const [quantity, setQuantity] = useState<string>('1');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +31,7 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
     setError('');
     const q = Math.floor(Number(quantity));
     if (q < 1) {
-      setError('Quantity must be at least 1.');
+      setError(t('addStock.errQty'));
       return;
     }
     setIsSubmitting(true);
@@ -40,12 +42,12 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
         reason: reason.trim() || undefined,
       })
       .then(() => {
-        toast.success('Stock updated successfully.');
+        toast.success(t('addStock.success'));
         handleClose();
         onSuccess();
       })
       .catch(() => {
-        setError('Failed to update stock.');
+        setError(t('addStock.failed'));
       })
       .finally(() => setIsSubmitting(false));
   }
@@ -56,12 +58,12 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">Add Stock</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{t('addStock.title')}</h2>
           <p className="text-sm text-slate-500 mt-0.5">
             {item.sku} · {item.name}
           </p>
           <p className="text-xs text-slate-400 mt-1">
-            Current: {item.wholesaleQuantity} box(es). All amounts in Bs where applicable.
+            {t('addStock.current', { count: item.wholesaleQuantity })}
           </p>
         </div>
 
@@ -74,7 +76,7 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
 
           <div>
             <label htmlFor="add-stock-qty" className="block text-sm font-medium text-slate-700 mb-1">
-              Quantity (boxes) to add
+              {t('addStock.qtyLabel')}
             </label>
             <input
               id="add-stock-qty"
@@ -91,7 +93,7 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
 
           <div>
             <label htmlFor="add-stock-reason" className="block text-sm font-medium text-slate-700 mb-1">
-              Note / reason (optional)
+              {t('addStock.reasonLabel')}
             </label>
             <input
               id="add-stock-reason"
@@ -99,7 +101,7 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="e.g. Restock from supplier"
+              placeholder={t('addStock.reasonPlaceholder')}
             />
           </div>
 
@@ -110,14 +112,14 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
               disabled={isSubmitting}
               className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 disabled:opacity-50 transition"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
             >
-              {isSubmitting ? 'Updating…' : 'Confirm'}
+              {isSubmitting ? t('addStock.updating') : t('common.confirm')}
             </button>
           </div>
         </form>
