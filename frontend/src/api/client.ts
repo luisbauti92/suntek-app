@@ -112,6 +112,9 @@ export interface RegisterStockRequest {
 export interface UpdateProductRequest {
   sku: string;
   name: string;
+  length: number;
+  width: number;
+  rollsPerBox: number;
   pricePerRoll: number;
   pricePerMeter: number;
 }

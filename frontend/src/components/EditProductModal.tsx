@@ -34,6 +34,9 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
   const { t } = useLanguage();
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
+  const [length, setLength] = useState('');
+  const [width, setWidth] = useState('');
+  const [rollsPerBox, setRollsPerBox] = useState('');
   const [pricePerRoll, setPricePerRoll] = useState('');
   const [pricePerMeter, setPricePerMeter] = useState('');
   const [error, setError] = useState('');
@@ -43,6 +46,9 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
     if (!isOpen || !item) return;
     setSku(item.sku);
     setName(item.name);
+    setLength(String(roundMoney2(item.length)));
+    setWidth(String(roundMoney2(item.width)));
+    setRollsPerBox(String(item.rollsPerBox));
     setPricePerRoll(String(roundMoney2(item.pricePerRoll)));
     setPricePerMeter(String(roundMoney2(item.pricePerMeter)));
     setError('');
@@ -57,13 +63,27 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
     e.preventDefault();
     if (!item) return;
     setError('');
+    const len = roundMoney2(parseFloat(length));
+    const wid = roundMoney2(parseFloat(width));
+    const rpb = Math.floor(Number(rollsPerBox));
     const roll = roundMoney2(parseFloat(pricePerRoll));
     const meter = roundMoney2(parseFloat(pricePerMeter));
     if (!sku.trim() || !name.trim()) {
       setError(t('editProduct.validation'));
       return;
     }
-    if (roll < 0 || meter < 0 || Number.isNaN(roll) || Number.isNaN(meter)) {
+    if (
+      len < 0 ||
+      wid < 0 ||
+      rpb < 1 ||
+      roll < 0 ||
+      meter < 0 ||
+      Number.isNaN(len) ||
+      Number.isNaN(wid) ||
+      Number.isNaN(rpb) ||
+      Number.isNaN(roll) ||
+      Number.isNaN(meter)
+    ) {
       setError(t('editProduct.validation'));
       return;
     }
@@ -72,6 +92,9 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
       await inventoryApi.update(item.id, {
         sku: sku.trim(),
         name: name.trim(),
+        length: len,
+        width: wid,
+        rollsPerBox: rpb,
         pricePerRoll: roll,
         pricePerMeter: meter,
       });
@@ -130,6 +153,68 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                 required
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder={t('productForm.namePlaceholder')}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="edit-length" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.length')}
+              </label>
+              <input
+                id="edit-length"
+                type="number"
+                min={0}
+                step={0.01}
+                inputMode="decimal"
+                value={length}
+                onChange={(e) => setLength(e.target.value)}
+                onBlur={() => {
+                  const v = parseFloat(length);
+                  if (!Number.isNaN(v)) setLength(String(roundMoney2(v)));
+                }}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-width" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.width')}
+              </label>
+              <input
+                id="edit-width"
+                type="number"
+                min={0}
+                step={0.01}
+                inputMode="decimal"
+                value={width}
+                onChange={(e) => setWidth(e.target.value)}
+                onBlur={() => {
+                  const v = parseFloat(width);
+                  if (!Number.isNaN(v)) setWidth(String(roundMoney2(v)));
+                }}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-rolls-per-box" className="block text-sm font-medium text-slate-700 mb-1">
+                {t('productForm.rollsPerBox')}
+              </label>
+              <input
+                id="edit-rolls-per-box"
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                value={rollsPerBox}
+                onChange={(e) => setRollsPerBox(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="1"
               />
             </div>
           </div>
