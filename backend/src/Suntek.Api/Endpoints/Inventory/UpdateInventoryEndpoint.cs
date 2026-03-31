@@ -9,6 +9,9 @@ public class UpdateInventoryRequest
 {
     public string Sku { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public decimal Length { get; set; }
+    public decimal Width { get; set; }
+    public int RollsPerBox { get; set; }
     public decimal PricePerRoll { get; set; }
     public decimal PricePerMeter { get; set; }
 }
@@ -42,7 +45,7 @@ public class UpdateInventoryEndpoint(IMediator mediator) : Endpoint<UpdateInvent
     {
         var id = Route<int>("id");
         var result = await mediator.Send(
-            new UpdateProductCommand(id, req.Sku, req.Name, req.PricePerRoll, req.PricePerMeter),
+            new UpdateProductCommand(id, req.Sku, req.Name, req.Length, req.Width, req.RollsPerBox, req.PricePerRoll, req.PricePerMeter),
             ct);
 
         if (result.Error == UpdateProductError.NotFound)

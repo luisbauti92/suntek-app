@@ -20,6 +20,12 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
         if (string.IsNullOrWhiteSpace(sku) || string.IsNullOrWhiteSpace(name))
             return new UpdateProductResult(null, UpdateProductError.InvalidInput);
 
+        var length = Round2(request.Length);
+        var width = Round2(request.Width);
+        var rollsPerBox = request.RollsPerBox;
+        if (length < 0 || width < 0 || rollsPerBox < 1)
+            return new UpdateProductResult(null, UpdateProductError.InvalidInput);
+
         var priceRoll = Round2(request.PricePerRoll);
         var priceMeter = Round2(request.PricePerMeter);
         if (priceRoll < 0 || priceMeter < 0)
@@ -30,6 +36,9 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
 
         product.Sku = sku;
         product.Name = name;
+        product.Length = length;
+        product.Width = width;
+        product.RollsPerBox = rollsPerBox;
         product.PricePerRoll = priceRoll;
         product.PricePerMeter = priceMeter;
         product.UpdatedAt = DateTime.UtcNow;
