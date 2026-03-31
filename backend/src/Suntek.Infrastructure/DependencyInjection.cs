@@ -14,8 +14,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(connectionString, npgsql =>
+            {
+                // Migrations live in Infrastructure; keep explicit for publish/Docker runs.
+                npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name!);
+            }));
 
         services.AddIdentity<AppUser, IdentityRole>(options =>
         {

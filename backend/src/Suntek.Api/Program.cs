@@ -3,6 +3,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using FastEndpoints.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Suntek.Application;
 using Suntek.Infrastructure;
@@ -49,8 +50,15 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    await DataSeeder.SeedRolesAsync(scope.ServiceProvider);
-    await DataSeeder.SeedAdminUserAsync(scope.ServiceProvider);
+    var sp = scope.ServiceProvider;
+    var db = sp.GetRequiredService<AppDbContext>();
+
+    // Applies pending migrations only; no-op when the DB is already up to date.
+    await db.Database.MigrateAsync();
+
+    // Idempotent: creates roles and default admin only if missing (safe on every startup).
+    await DataSeeder.SeedRolesAsync(sp);
+    await DataSeeder.SeedAdminUserAsync(sp);
 }
 
 app.UseCors("SuntekPolicy");
