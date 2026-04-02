@@ -9,6 +9,8 @@ public class MovementHistoryRequest
 {
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 25;
 }
 
 public class MovementDtoResponse
@@ -29,7 +31,16 @@ public class MovementDtoResponse
     public decimal? SaleTotalBs { get; set; }
 }
 
-public class ListMovementsEndpoint(IMediator mediator) : Endpoint<MovementHistoryRequest, List<MovementDtoResponse>>
+public class MovementHistoryPagedResponse
+{
+    public List<MovementDtoResponse> Items { get; set; } = [];
+    public int TotalCount { get; set; }
+    public decimal TotalSalesBsInRange { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+}
+
+public class ListMovementsEndpoint(IMediator mediator) : Endpoint<MovementHistoryRequest, MovementHistoryPagedResponse>
 {
     public override void Configure()
     {
@@ -39,26 +50,37 @@ public class ListMovementsEndpoint(IMediator mediator) : Endpoint<MovementHistor
 
     public override async Task HandleAsync(MovementHistoryRequest req, CancellationToken ct)
     {
-        var movements = await mediator.Send(
-            new GetMovementHistoryQuery(req.StartDate, req.EndDate),
+        var page = req.Page < 1 ? 1 : req.Page;
+        var pageSize = Math.Clamp(req.PageSize <= 0 ? 25 : req.PageSize, 1, 100);
+
+        var result = await mediator.Send(
+            new GetMovementHistoryQuery(req.StartDate, req.EndDate, page, pageSize),
             ct);
-        Response = movements.Select(m => new MovementDtoResponse
+
+        Response = new MovementHistoryPagedResponse
         {
-            Id = m.Id,
-            MovementType = m.MovementType.ToString(),
-            ProductId = m.ProductId,
-            ProductSku = m.ProductSku,
-            ProductName = m.ProductName,
-            Quantity = m.Quantity,
-            QuantityUnit = m.QuantityUnit,
-            Description = m.Description,
-            WholesaleQuantityAfter = m.WholesaleQuantityAfter,
-            RetailQuantityAfter = m.RetailQuantityAfter,
-            CreatedAt = m.CreatedAt,
-            SaleId = m.SaleId,
-            SaleUnitPriceBs = m.SaleUnitPriceBs,
-            SaleTotalBs = m.SaleTotalBs
-        }).ToList();
+            Items = result.Items.Select(m => new MovementDtoResponse
+            {
+                Id = m.Id,
+                MovementType = m.MovementType.ToString(),
+                ProductId = m.ProductId,
+                ProductSku = m.ProductSku,
+                ProductName = m.ProductName,
+                Quantity = m.Quantity,
+                QuantityUnit = m.QuantityUnit,
+                Description = m.Description,
+                WholesaleQuantityAfter = m.WholesaleQuantityAfter,
+                RetailQuantityAfter = m.RetailQuantityAfter,
+                CreatedAt = m.CreatedAt,
+                SaleId = m.SaleId,
+                SaleUnitPriceBs = m.SaleUnitPriceBs,
+                SaleTotalBs = m.SaleTotalBs
+            }).ToList(),
+            TotalCount = result.TotalCount,
+            TotalSalesBsInRange = result.TotalSalesBsInRange,
+            Page = result.Page,
+            PageSize = result.PageSize
+        };
         await Send.OkAsync(Response, ct);
     }
 }

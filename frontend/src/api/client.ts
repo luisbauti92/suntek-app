@@ -3,6 +3,15 @@ import axios from 'axios';
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 const TOKEN_KEY = 'suntek_token';
 
+/** Dispatched once per “wave” of 401s so the UI can show a session-expired dialog. */
+export const SESSION_EXPIRED_EVENT = 'suntek:session-expired';
+
+let sessionExpiredNotified = false;
+
+export function resetSessionExpiredNotification(): void {
+  sessionExpiredNotified = false;
+}
+
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -27,7 +36,10 @@ apiClient.interceptors.response.use(
       if (!isAuthRequest) {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem('suntek_user');
-        window.location.href = '/login';
+        if (!sessionExpiredNotified) {
+          sessionExpiredNotified = true;
+          window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+        }
       }
     }
     return Promise.reject(error);
@@ -181,16 +193,26 @@ export interface MovementDto {
   saleTotalBs?: number | null;
 }
 
+export interface MovementHistoryPaged {
+  items: MovementDto[];
+  totalCount: number;
+  totalSalesBsInRange: number;
+  page: number;
+  pageSize: number;
+}
+
 const SALES_REPORT_FILENAME = 'Suntek_Sales_Report.xlsx';
 
 export const salesApi = {
   recordSale: (data: RecordSaleRequest) =>
     apiClient.post<RecordSaleResponse>('/sales', data),
-  listMovements: (startDate?: string, endDate?: string) =>
-    apiClient.get<MovementDto[]>('/sales/movements', {
+  listMovements: (startDate?: string, endDate?: string, page = 1, pageSize = 25) =>
+    apiClient.get<MovementHistoryPaged>('/sales/movements', {
       params: {
         startDate,
         endDate,
+        page,
+        pageSize,
       },
     }),
   /** Exports sales report as Excel; returns blob and triggers browser download. */

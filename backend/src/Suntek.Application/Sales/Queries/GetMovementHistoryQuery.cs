@@ -5,4 +5,6 @@ namespace Suntek.Application.Sales.Queries;
 
 public record GetMovementHistoryQuery(
     DateTime? StartDateUtc,
-    DateTime? EndDateUtc) : IRequest<IReadOnlyList<MovementDto>>;
+    DateTime? EndDateUtc,
+    int Page,
+    int PageSize) : IRequest<MovementHistoryPageResult>;

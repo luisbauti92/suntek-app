@@ -1,6 +1,8 @@
 import { Fragment, useMemo } from 'react';
 import {
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
   TrendingUp,
   Download,
   Layers,
@@ -123,6 +125,12 @@ function MovementTypeBadge({ type }: { type: string }) {
 interface MovementHistoryPanelProps {
   movements: MovementDto[];
   movementsLoading: boolean;
+  movementsTotalCount: number;
+  movementsTotalSalesBs: number;
+  movementsPage: number;
+  movementsPageSize: number;
+  onMovementsPageChange: (page: number) => void;
+  onMovementsPageSizeChange: (pageSize: number) => void;
   inventoryItems: InventoryItemDto[];
   movementFilter: MovementFilterValue;
   onFilterChange: (val: MovementFilterValue) => void;
@@ -130,9 +138,17 @@ interface MovementHistoryPanelProps {
   onExportExcel: () => void;
 }
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+
 export function MovementHistoryPanel({
   movements,
   movementsLoading,
+  movementsTotalCount,
+  movementsTotalSalesBs,
+  movementsPage,
+  movementsPageSize,
+  onMovementsPageChange,
+  onMovementsPageSizeChange,
   inventoryItems,
   movementFilter,
   onFilterChange,
@@ -150,17 +166,12 @@ export function MovementHistoryPanel({
     [intlLocale]
   );
 
-  const totalSalesBs = useMemo(
-    () =>
-      movements.reduce((sum, m) => {
-        if (normalizeMovementType(m.movementType) !== 'Sale') return sum;
-        const v = m.saleTotalBs ?? 0;
-        return sum + Number(v);
-      }, 0),
-    [movements]
-  );
-
-  const movementCount = movements.length;
+  const totalSalesBs = movementsTotalSalesBs;
+  const movementCount = movementsTotalCount;
+  const totalPages =
+    movementsTotalCount === 0
+      ? 1
+      : Math.ceil(movementsTotalCount / movementsPageSize);
   const lowStockCount = useMemo(
     () => inventoryItems.filter((i) => i.wholesaleQuantity < 5).length,
     [inventoryItems]
@@ -179,7 +190,7 @@ export function MovementHistoryPanel({
             <TrendingUp className="h-5 w-5 text-emerald-500" aria-hidden />
           </div>
           <p className="mt-3 text-2xl font-semibold tracking-tight text-emerald-600 tabular-nums">
-            {formatBs(totalSalesBs)}
+            {formatBs(Number(totalSalesBs))}
           </p>
           <p className="mt-1 text-xs text-slate-500">{t('movements.kpiSalesHint')}</p>
         </div>
@@ -321,6 +332,48 @@ export function MovementHistoryPanel({
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {!movementsLoading && movementsTotalCount > 0 && (
+          <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-slate-500">{t('movements.perPage')}</span>
+              <select
+                value={movementsPageSize}
+                onChange={(e) => onMovementsPageSizeChange(Number(e.target.value))}
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                {PAGE_SIZE_OPTIONS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onMovementsPageChange(movementsPage - 1)}
+                disabled={movementsPage <= 1}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden />
+                {t('movements.paginationPrev')}
+              </button>
+              <span className="min-w-[8rem] text-center text-sm tabular-nums text-slate-600">
+                {t('movements.pageOf', { current: movementsPage, total: totalPages })}
+              </span>
+              <button
+                type="button"
+                onClick={() => onMovementsPageChange(movementsPage + 1)}
+                disabled={movementsPage >= totalPages}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {t('movements.paginationNext')}
+                <ChevronRight className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
           </div>
         )}
       </div>

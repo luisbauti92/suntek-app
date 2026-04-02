@@ -38,6 +38,10 @@ export function InventoryDashboard() {
   const [addStockItem, setAddStockItem] = useState<InventoryItemDto | null>(null);
   const [salesModalOpen, setSalesModalOpen] = useState(false);
   const [movements, setMovements] = useState<MovementDto[]>([]);
+  const [movementsTotalCount, setMovementsTotalCount] = useState(0);
+  const [movementsTotalSalesBs, setMovementsTotalSalesBs] = useState(0);
+  const [movementsPage, setMovementsPage] = useState(1);
+  const [movementsPageSize, setMovementsPageSize] = useState(25);
   const [movementsLoading, setMovementsLoading] = useState(false);
   const [movementFilter, setMovementFilter] = useState<MovementFilterValue>({
     option: 'last30',
@@ -60,19 +64,33 @@ export function InventoryDashboard() {
     refreshItems();
   }, [refreshItems]);
 
-  const refreshMovements = useCallback((filter?: MovementFilterValue) => {
-    const f = filter ?? movementFilter;
+  const refreshMovements = useCallback(() => {
     setMovementsLoading(true);
     salesApi
-      .listMovements(f.startDate, f.endDate)
-      .then((res) => setMovements(res.data))
-      .catch(() => setMovements([]))
+      .listMovements(
+        movementFilter.startDate,
+        movementFilter.endDate,
+        movementsPage,
+        movementsPageSize
+      )
+      .then((res) => {
+        const d = res.data;
+        setMovements(d.items);
+        setMovementsTotalCount(d.totalCount);
+        setMovementsTotalSalesBs(d.totalSalesBsInRange);
+        if (d.page !== movementsPage) setMovementsPage(d.page);
+      })
+      .catch(() => {
+        setMovements([]);
+        setMovementsTotalCount(0);
+        setMovementsTotalSalesBs(0);
+      })
       .finally(() => setMovementsLoading(false));
-  }, [movementFilter]);
+  }, [movementFilter, movementsPage, movementsPageSize]);
 
   useEffect(() => {
     if (activeTab === 'movements') refreshMovements();
-  }, [activeTab, refreshMovements]);
+  }, [activeTab, movementFilter, movementsPage, movementsPageSize, refreshMovements]);
 
   function handleOpenBoxClick(productId: number) {
     setOpenBoxProductId(productId);
@@ -236,11 +254,20 @@ export function InventoryDashboard() {
           <MovementHistoryPanel
             movements={movements}
             movementsLoading={movementsLoading}
+            movementsTotalCount={movementsTotalCount}
+            movementsTotalSalesBs={movementsTotalSalesBs}
+            movementsPage={movementsPage}
+            movementsPageSize={movementsPageSize}
+            onMovementsPageChange={setMovementsPage}
+            onMovementsPageSizeChange={(n) => {
+              setMovementsPage(1);
+              setMovementsPageSize(n);
+            }}
             inventoryItems={items}
             movementFilter={movementFilter}
             onFilterChange={(val) => {
               setMovementFilter(val);
-              refreshMovements(val);
+              setMovementsPage(1);
             }}
             exportExcelLoading={exportExcelLoading}
             onExportExcel={handleExportExcel}

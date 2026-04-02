@@ -27,6 +27,10 @@ export const messages: Record<Locale, MessageTree> = {
       passwordHint: 'Mín. 8 caracteres, mayúscula, minúscula, dígito y carácter especial',
       loginInvalid: 'Correo o contraseña inválidos.',
       registerFailed: 'No se pudo registrar. Inténtalo de nuevo.',
+      sessionExpiredTitle: 'Sesión finalizada',
+      sessionExpiredMessage:
+        'Tu sesión expiró o ya no es válida. Inicia sesión de nuevo para continuar.',
+      sessionExpiredConfirm: 'Ir a iniciar sesión',
     },
     dashboard: {
       title: 'SUNTEK · Inventario',
@@ -81,6 +85,10 @@ export const messages: Record<Locale, MessageTree> = {
       unitPricePrefix: 'Unit.:',
       boxesSuffix: 'caj.',
       retailSuffix: 'retail',
+      paginationPrev: 'Anterior',
+      paginationNext: 'Siguiente',
+      pageOf: 'Página {{current}} de {{total}}',
+      perPage: 'Por página',
     },
     filter: {
       period: 'Período',
@@ -181,6 +189,10 @@ export const messages: Record<Locale, MessageTree> = {
       passwordHint: 'Min 8 chars, uppercase, lowercase, digit, and special character',
       loginInvalid: 'Invalid email or password.',
       registerFailed: 'Registration failed. Please try again.',
+      sessionExpiredTitle: 'Session ended',
+      sessionExpiredMessage:
+        'Your session has expired or is no longer valid. Please sign in again to continue.',
+      sessionExpiredConfirm: 'Sign in',
     },
     dashboard: {
       title: 'SUNTEK · Inventory',
@@ -235,6 +247,10 @@ export const messages: Record<Locale, MessageTree> = {
       unitPricePrefix: 'Unit:',
       boxesSuffix: 'bx',
       retailSuffix: 'retail',
+      paginationPrev: 'Previous',
+      paginationNext: 'Next',
+      pageOf: 'Page {{current}} of {{total}}',
+      perPage: 'Per page',
     },
     filter: {
       period: 'Period',
