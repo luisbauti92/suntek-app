@@ -58,6 +58,8 @@ export const messages: Record<Locale, MessageTree> = {
       toastExportSuccess: 'Informe de ventas en Bs generado y descargado.',
       toastExportError: 'Error al exportar.',
       toastOpenBoxSuccess: 'Caja abierta. Stock añadido a la tienda.',
+      inventorySearchPlaceholder: 'Buscar por SKU o nombre…',
+      inventoryNoMatches: 'No hay productos que coincidan con la búsqueda.',
     },
     movements: {
       kpiSales: 'Ventas totales (Bs)',
@@ -220,6 +222,8 @@ export const messages: Record<Locale, MessageTree> = {
       toastExportSuccess: 'Sales report (Bs) generated and downloaded.',
       toastExportError: 'Export failed.',
       toastOpenBoxSuccess: 'Box opened! Stock added to Storefront.',
+      inventorySearchPlaceholder: 'Search by SKU or name…',
+      inventoryNoMatches: 'No products match your search.',
     },
     movements: {
       kpiSales: 'Total sales (Bs)',
