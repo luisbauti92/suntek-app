@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { SessionExpiredModal } from './components/SessionExpiredModal';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { InventoryDashboard } from './pages/InventoryDashboard';
@@ -13,6 +14,7 @@ function App() {
       <Toaster richColors position="top-right" />
       <LanguageProvider>
       <AuthProvider>
+        <SessionExpiredModal />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

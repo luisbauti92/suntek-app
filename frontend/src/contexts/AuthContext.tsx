@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { authApi } from '../api/client';
+import { authApi, resetSessionExpiredNotification } from '../api/client';
 
 const TOKEN_KEY = 'suntek_token';
 const USER_KEY = 'suntek_user';
@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         roles,
         expiresAt: new Date(expiresAt).toISOString(),
       };
+      resetSessionExpiredNotification();
       setAuth(token, user);
     },
     [setAuth]

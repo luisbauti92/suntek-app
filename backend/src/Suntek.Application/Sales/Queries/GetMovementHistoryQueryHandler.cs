@@ -5,15 +5,18 @@ using Suntek.Domain.Interfaces;
 namespace Suntek.Application.Sales.Queries;
 
 public class GetMovementHistoryQueryHandler(IInventoryMovementRepository movementRepository)
-    : IRequestHandler<GetMovementHistoryQuery, IReadOnlyList<MovementDto>>
+    : IRequestHandler<GetMovementHistoryQuery, MovementHistoryPageResult>
 {
-    public async Task<IReadOnlyList<MovementDto>> Handle(GetMovementHistoryQuery request, CancellationToken ct)
+    public async Task<MovementHistoryPageResult> Handle(GetMovementHistoryQuery request, CancellationToken ct)
     {
-        var movements = await movementRepository.GetByDateRangeOrderedByDateDescAsync(
+        var (movements, totalCount, totalSalesBsInRange, resolvedPage) = await movementRepository.GetMovementHistoryPageAsync(
             request.StartDateUtc,
             request.EndDateUtc,
+            request.Page,
+            request.PageSize,
             ct);
-        return movements
+
+        var items = movements
             .Select(m => new MovementDto(
                 m.Id,
                 m.MovementType,
@@ -30,5 +33,12 @@ public class GetMovementHistoryQueryHandler(IInventoryMovementRepository movemen
                 m.Sale != null ? m.Sale.UnitPrice : null,
                 m.Sale != null ? m.Sale.TotalPrice : null))
             .ToList();
+
+        return new MovementHistoryPageResult(
+            items,
+            totalCount,
+            totalSalesBsInRange,
+            resolvedPage,
+            request.PageSize);
     }
 }
