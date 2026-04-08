@@ -39,4 +39,4 @@ jobs:
           push: true
           tags: ghcr.io/luisbauti92/suntek-app-web:latest
           build-args: |
-            VITE_API_URL=http://localhost:8080/api
+            VITE_API_URL=/api
