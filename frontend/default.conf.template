@@ -1,21 +1,28 @@
 server {
     listen 80;
+    
+    # El DNS interno de Docker para resolver nombres de contenedores
+    resolver 127.0.0.11 valid=30s;
 
-    # Configuración para el Frontend (React)
+    # Sirve el Frontend (React/Vite)
     location / {
         root /usr/share/nginx/html;
         index index.html index.htm;
         try_files $uri $uri/ /index.html;
     }
 
-    # Proxy inverso para la API
+    # Proxy Inverso para la API
     location /api/ {
-        # Usamos una variable que Dokploy nos dará
-        proxy_pass http://${BACKEND_HOST}:8080/api/;
+        # La variable ${BACKEND_HOST} la llenaremos desde Dokploy
+        proxy_pass http://${BACKEND_HOST}:8080;
+        
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
