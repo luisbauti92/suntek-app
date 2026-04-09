@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/* SUNTEK brand — extracted from logo (azul rey + cielo + blanco) */
+:root {
+  --primary: #002d9c;
+  --secondary: #009ddf;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-muted: #f4f7fb;
+  --text: #334155;
+  --text-h: #002d9c;
+  --border: #e2e8f0;
+  --border-strong: rgba(0, 45, 156, 0.18);
+  --primary-hover: #001f70;
+  --secondary-soft: rgba(0, 157, 223, 0.12);
+  --code-bg: #f1f5f9;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 16px/150% var(--sans);
+  letter-spacing: 0.01em;
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  text-align: left;
+  border: none;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+p {
+  margin: 0;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--code-bg);
+  color: var(--text-h);
+}
+
+/* Fondo de página muy sutil */
+.catalog-bg {
+  background-color: var(--bg);
+  background-image: radial-gradient(
+    ellipse 100% 60% at 50% 0%,
+    rgba(0, 157, 223, 0.06),
+    transparent 55%
+  );
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 157, 223, 0.45);
+  border-radius: 999px;
+}
