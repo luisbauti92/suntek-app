@@ -1,0 +1,13 @@
+bin/
+obj/
+
+# ASP.NET Core user secrets
+secrets.json
+
+# Environment files
+.env
+.env.*
+
+# Local/production overrides should never be committed
+appsettings.Development.json
+appsettings.Production.json
