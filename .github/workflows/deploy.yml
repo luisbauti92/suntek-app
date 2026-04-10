@@ -21,22 +21,33 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build Backend (Nativo x64 en GitHub, vuela)
+      # 1. Build Backend
       - name: Build and push API
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: ghcr.io/luisbauti92/suntek-app-api:latest
+          tags: ghcr.io/${{ github.repository_owner }}/suntek-app-api:latest
 
-      # Build Frontend (Nativo x64)
-      - name: Build and push Web
+      # 2. Build Admin Frontend (El que ya tenías)
+      - name: Build and push Admin Frontend
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ghcr.io/luisbauti92/suntek-app-web:latest
+          tags: ghcr.io/${{ github.repository_owner }}/suntek-app-frontend:latest
           build-args: |
             VITE_API_URL=/api
+
+      # 3. Build Catalog Web (El nuevo búnker de ventas)
+      - name: Build and push Catalog Web
+        uses: docker/build-push-action@v5
+        with:
+          context: ./catalog-web
+          file: ./catalog-web/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/suntek-app-catalog:latest
+          build-args: |
+            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
