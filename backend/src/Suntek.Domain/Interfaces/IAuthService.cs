@@ -15,5 +15,5 @@ public record RegisterResult(
 public interface IAuthService
 {
     Task<AuthResult> LoginAsync(string email, string password, CancellationToken ct = default);
-    Task<RegisterResult> RegisterAsync(string fullName, string email, string password, CancellationToken ct = default);
+    Task<RegisterResult> RegisterAsync(string fullName, string email, string password, string? role, CancellationToken ct = default);
 }

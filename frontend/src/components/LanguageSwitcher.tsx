@@ -33,7 +33,7 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
             onClick={() => setLocale(code)}
             className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
               locale === code
-                ? 'bg-white text-indigo-700 shadow-sm'
+                ? 'bg-white text-violet-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >

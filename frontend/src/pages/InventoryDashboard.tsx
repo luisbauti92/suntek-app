@@ -1,18 +1,36 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Pencil, Search } from 'lucide-react';
+import { Banknote, ChevronLeft, ChevronRight, Package, Plus, Search, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { inventoryApi, salesApi } from '../api/client';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { inventoryApi, salesApi, usersApi } from '../api/client';
 import { ProductForm } from '../components/ProductForm';
 import { EditProductModal } from '../components/EditProductModal';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { SalesEntryModal } from '../components/SalesEntryModal';
 import { AddStockModal } from '../components/AddStockModal';
 import { MovementHistoryPanel } from '../components/MovementHistoryPanel';
+import { AppShell } from '../components/layout/AppShell';
+import type { ErpNavId } from '../components/layout/erpNav';
+import { KpiStrip } from '../components/dashboard/KpiStrip';
+import { UsersPanel } from '../components/users/UsersPanel';
+import { StockBadge } from '../components/StockBadge';
+import {
+  StorefrontRowActionsDropdown,
+  WarehouseRowActionsDropdown,
+} from '../components/RowActionsDropdown';
 import type { MovementFilterValue } from '../components/MovementFilterBar';
-import type { InventoryItemDto, MovementDto } from '../api/client';
+import type { InventoryItemDto, MovementDto, UserListItemDto } from '../api/client';
+import {
+  estimateInventoryValueBs,
+  lowStockAlertCount,
+  stockHealthPercent,
+  storefrontStockLevel,
+  warehouseStockLevel,
+} from '../utils/inventoryMetrics';
+import { formatBs } from '../utils/formatBs';
+
+const SIDEBAR_KEY = 'suntek_erp_sidebar_collapsed';
 
 function formatRetailQuantity(
   item: InventoryItemDto,
@@ -36,7 +54,12 @@ function filterInventoryItems(items: InventoryItemDto[], searchRaw: string): Inv
   );
 }
 
-function useClientInventoryPaging(items: InventoryItemDto[], searchRaw: string, page: number, pageSize: number) {
+function useClientInventoryPaging(
+  items: InventoryItemDto[],
+  searchRaw: string,
+  page: number,
+  pageSize: number
+) {
   const filtered = useMemo(
     () => filterInventoryItems(items, searchRaw),
     [items, searchRaw]
@@ -52,6 +75,12 @@ function useClientInventoryPaging(items: InventoryItemDto[], searchRaw: string, 
   );
 
   return { filtered, paged, totalFiltered, totalPages, safePage };
+}
+
+function countRecentLogins(users: UserListItemDto[], hours = 24): number {
+  const ms = hours * 60 * 60 * 1000;
+  const t0 = Date.now() - ms;
+  return users.filter((u) => u.lastLoginAt && new Date(u.lastLoginAt).getTime() >= t0).length;
 }
 
 function InventoryListChrome({
@@ -77,7 +106,7 @@ function InventoryListChrome({
 }) {
   const { t } = useLanguage();
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-950/[0.02]">
       <div className="border-b border-slate-100 px-4 py-4">
         <div className="relative max-w-md">
           <Search
@@ -89,7 +118,7 @@ function InventoryListChrome({
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={t('dashboard.inventorySearchPlaceholder')}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
             autoComplete="off"
           />
         </div>
@@ -102,7 +131,7 @@ function InventoryListChrome({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
             >
               {INVENTORY_PAGE_SIZES.map((n) => (
                 <option key={n} value={n}>
@@ -141,12 +170,20 @@ function InventoryListChrome({
 }
 
 export function InventoryDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
+  const isAdmin = Boolean(user?.roles?.includes('Admin'));
+
+  const [activeNav, setActiveNav] = useState<ErpNavId>('dashboard');
+  const [warehouseView, setWarehouseView] = useState<'warehouse' | 'storefront'>('warehouse');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem(SIDEBAR_KEY) === '1'
+  );
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   const [items, setItems] = useState<InventoryItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'warehouse' | 'storefront' | 'movements'>('warehouse');
   const [openBoxProductId, setOpenBoxProductId] = useState<number | null>(null);
   const [openBoxLoading, setOpenBoxLoading] = useState(false);
   const [addStockItem, setAddStockItem] = useState<InventoryItemDto | null>(null);
@@ -167,9 +204,23 @@ export function InventoryDashboard() {
   const [inventorySearch, setInventorySearch] = useState('');
   const [inventoryPage, setInventoryPage] = useState(1);
   const [inventoryPageSize, setInventoryPageSize] = useState(25);
+  const [userSearch, setUserSearch] = useState('');
+  const [directoryUsers, setDirectoryUsers] = useState<UserListItemDto[]>([]);
+  const [directoryLoading, setDirectoryLoading] = useState(() =>
+    Boolean(user?.roles?.includes('Admin'))
+  );
+  const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
 
   const { paged: inventoryPaged, totalFiltered, totalPages, safePage } =
     useClientInventoryPaging(items, inventorySearch, inventoryPage, inventoryPageSize);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_KEY, sidebarCollapsed ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     if (safePage !== inventoryPage) setInventoryPage(safePage);
@@ -198,6 +249,30 @@ export function InventoryDashboard() {
     refreshItems();
   }, [refreshItems]);
 
+  useEffect(() => {
+    if (!isAdmin) {
+      setDirectoryUsers([]);
+      setDirectoryLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setDirectoryLoading(true);
+    usersApi
+      .list()
+      .then((r) => {
+        if (!cancelled) setDirectoryUsers(r.data);
+      })
+      .catch(() => {
+        if (!cancelled) setDirectoryUsers([]);
+      })
+      .finally(() => {
+        if (!cancelled) setDirectoryLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
   const refreshMovements = useCallback(() => {
     setMovementsLoading(true);
     salesApi
@@ -223,8 +298,12 @@ export function InventoryDashboard() {
   }, [movementFilter, movementsPage, movementsPageSize]);
 
   useEffect(() => {
-    if (activeTab === 'movements') refreshMovements();
-  }, [activeTab, movementFilter, movementsPage, movementsPageSize, refreshMovements]);
+    if (activeNav === 'sales') refreshMovements();
+  }, [activeNav, movementFilter, movementsPage, movementsPageSize, refreshMovements]);
+
+  useEffect(() => {
+    setOpenMenuKey(null);
+  }, [activeNav, warehouseView]);
 
   function handleOpenBoxClick(productId: number) {
     setOpenBoxProductId(productId);
@@ -252,300 +331,442 @@ export function InventoryDashboard() {
       setOpenBoxProductId(null);
       toast.success(t('dashboard.toastOpenBoxSuccess'));
     } catch {
-      // Error - list will not refresh
+      /* keep modal */
     } finally {
       setOpenBoxLoading(false);
     }
   }
 
+  const kpiLoading = loading || (isAdmin && directoryLoading);
+
+  const kpiProps = useMemo(() => {
+    const valueBs = estimateInventoryValueBs(items);
+    const health = stockHealthPercent(items);
+    const low = lowStockAlertCount(items);
+    const fourthTitle = isAdmin ? t('erp.kpiActiveStaff') : t('erp.kpiSkusTitle');
+    const recent = countRecentLogins(directoryUsers, 24);
+    const fourthValue = isAdmin ? String(recent) : String(items.length);
+    const fourthHint = isAdmin ? t('erp.kpiActiveStaffHint') : t('erp.kpiSkusHint');
+    return {
+      inventoryValueLabel: formatBs(valueBs),
+      stockHealthLabel: `${health}%`,
+      lowStockCount: String(low),
+      fourthTitle,
+      fourthValue,
+      fourthHint,
+      lowStockStress: low > 0,
+    };
+  }, [items, directoryUsers, isAdmin, t]);
+
+  const headerSearchValue = activeNav === 'users' ? userSearch : inventorySearch;
+  const onHeaderSearchChange = activeNav === 'users' ? setUserSearch : handleInventorySearchChange;
+  const headerSearchEnabled =
+    activeNav === 'dashboard' || activeNav === 'warehouse' || activeNav === 'users';
+  const headerSearchPlaceholder =
+    activeNav === 'users' ? t('erp.usersSearchPlaceholder') : t('dashboard.inventorySearchPlaceholder');
+
+  function navigateNav(id: ErpNavId) {
+    setActiveNav(id);
+    if (id === 'warehouse') setWarehouseView('warehouse');
+  }
+
+  const badgeLabels = {
+    full: t('erp.badgeFull'),
+    low: t('erp.badgeLow'),
+    out: t('erp.badgeOut'),
+  };
+
+  const rowActionLabels = {
+    more: t('erp.actionsMore'),
+    edit: t('editProduct.editTooltip'),
+    addStock: t('dashboard.addStockTitle'),
+    openBox: t('dashboard.openBox'),
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-slate-900">{t('dashboard.title')}</h1>
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher compact />
-            <span className="text-sm text-slate-600">{user?.email}</span>
-            <span className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-600">
-              {user?.roles.join(', ')}
-            </span>
+    <AppShell
+      activeNav={activeNav}
+      onNavigate={navigateNav}
+      isAdmin={isAdmin}
+      sidebarCollapsed={sidebarCollapsed}
+      onToggleSidebarCollapsed={() => setSidebarCollapsed((c) => !c)}
+      mobileSidebarOpen={mobileSidebarOpen}
+      onMobileSidebarOpenChange={setMobileSidebarOpen}
+      headerSearchValue={headerSearchValue}
+      onHeaderSearchChange={onHeaderSearchChange}
+      headerSearchPlaceholder={headerSearchPlaceholder}
+      headerSearchEnabled={headerSearchEnabled}
+    >
+      <ProductForm
+        isOpen={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSuccess={refreshItems}
+      />
+
+      <SalesEntryModal
+        isOpen={salesModalOpen}
+        onClose={() => setSalesModalOpen(false)}
+        onSuccess={() => {
+          refreshItems();
+          if (activeNav === 'sales') refreshMovements();
+        }}
+        products={items}
+      />
+
+      <ConfirmModal
+        isOpen={openBoxProductId != null}
+        onClose={() => setOpenBoxProductId(null)}
+        onConfirm={handleOpenBoxConfirm}
+        title={t('dashboard.openBoxTitle')}
+        message={t('dashboard.openBoxMessage')}
+        confirmLabel={t('dashboard.openBox')}
+        isLoading={openBoxLoading}
+      />
+
+      <AddStockModal
+        isOpen={addStockItem != null}
+        onClose={() => setAddStockItem(null)}
+        onSuccess={() => {
+          refreshItems();
+          if (activeNav === 'sales') refreshMovements();
+        }}
+        item={addStockItem}
+      />
+
+      <EditProductModal
+        item={editProductItem}
+        isOpen={editProductItem != null}
+        onClose={() => setEditProductItem(null)}
+        onSuccess={() => {
+          refreshItems();
+          if (activeNav === 'sales') refreshMovements();
+        }}
+      />
+
+      {activeNav === 'dashboard' && (
+        <div className="mx-auto max-w-7xl space-y-8">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+              {t('erp.dashboardWelcomeTitle')}
+            </h1>
+            <p className="max-w-3xl text-sm leading-relaxed text-slate-600">{t('erp.dashboardWelcomeBody')}</p>
+          </div>
+          <KpiStrip
+            loading={kpiLoading}
+            inventoryValueLabel={kpiProps.inventoryValueLabel}
+            inventoryValueHint={t('erp.kpiInventoryValueHint')}
+            stockHealthLabel={kpiProps.stockHealthLabel}
+            stockHealthHint={t('erp.kpiStockHealthHint')}
+            lowStockCount={kpiProps.lowStockCount}
+            lowStockHint={t('erp.kpiLowStockHint')}
+            lowStockStress={kpiProps.lowStockStress}
+            fourthTitle={kpiProps.fourthTitle}
+            fourthValue={kpiProps.fourthValue}
+            fourthHint={kpiProps.fourthHint}
+          />
+          <div className="grid gap-4 md:grid-cols-2">
             <button
-              onClick={logout}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              type="button"
+              onClick={() => navigateNav('warehouse')}
+              className="group flex flex-col rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm ring-1 ring-slate-950/[0.02] transition hover:border-violet-200 hover:shadow-md"
             >
-              {t('dashboard.signOut')}
+              <Package className="h-8 w-8 text-violet-600" />
+              <h3 className="mt-4 text-base font-semibold text-slate-900">{t('dashboard.tabWarehouse')}</h3>
+              <p className="mt-1 text-sm text-slate-500">{t('erp.warehouseToolbarHint')}</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateNav('sales')}
+              className="group flex flex-col rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm ring-1 ring-slate-950/[0.02] transition hover:border-violet-200 hover:shadow-md"
+            >
+              <ShoppingCart className="h-8 w-8 text-violet-600" />
+              <h3 className="mt-4 text-base font-semibold text-slate-900">{t('dashboard.tabMovements')}</h3>
+              <p className="mt-1 text-sm text-slate-500">{t('movements.kpiSalesHint')}</p>
             </button>
           </div>
         </div>
-      </header>
+      )}
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('warehouse')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                activeTab === 'warehouse'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              {t('dashboard.tabWarehouse')}
-            </button>
-            <button
-              onClick={() => setActiveTab('storefront')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                activeTab === 'storefront'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              {t('dashboard.tabStorefront')}
-            </button>
-            <button
-              onClick={() => setActiveTab('movements')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                activeTab === 'movements'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-              }`}
-            >
-              {t('dashboard.tabMovements')}
-            </button>
-          </div>
-          <div className="flex gap-2">
-          <button
-            onClick={() => setSalesModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t('dashboard.recordSale')}
-          </button>
-          <button
-            onClick={() => setFormOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('dashboard.addProduct')}
-          </button>
-          </div>
-        </div>
+      {activeNav === 'warehouse' && (
+        <div className="mx-auto max-w-7xl space-y-6">
+          <KpiStrip
+            loading={kpiLoading}
+            inventoryValueLabel={kpiProps.inventoryValueLabel}
+            inventoryValueHint={t('erp.kpiInventoryValueHint')}
+            stockHealthLabel={kpiProps.stockHealthLabel}
+            stockHealthHint={t('erp.kpiStockHealthHint')}
+            lowStockCount={kpiProps.lowStockCount}
+            lowStockHint={t('erp.kpiLowStockHint')}
+            lowStockStress={kpiProps.lowStockStress}
+            fourthTitle={kpiProps.fourthTitle}
+            fourthValue={kpiProps.fourthValue}
+            fourthHint={kpiProps.fourthHint}
+          />
 
-        <ProductForm
-          isOpen={formOpen}
-          onClose={() => setFormOpen(false)}
-          onSuccess={refreshItems}
-        />
-
-        <SalesEntryModal
-          isOpen={salesModalOpen}
-          onClose={() => setSalesModalOpen(false)}
-          onSuccess={() => { refreshItems(); if (activeTab === 'movements') refreshMovements(); }}
-          products={items}
-        />
-
-        <ConfirmModal
-          isOpen={openBoxProductId != null}
-          onClose={() => setOpenBoxProductId(null)}
-          onConfirm={handleOpenBoxConfirm}
-          title={t('dashboard.openBoxTitle')}
-          message={t('dashboard.openBoxMessage')}
-          confirmLabel={t('dashboard.openBox')}
-          isLoading={openBoxLoading}
-        />
-
-        <AddStockModal
-          isOpen={addStockItem != null}
-          onClose={() => setAddStockItem(null)}
-          onSuccess={() => { refreshItems(); if (activeTab === 'movements') refreshMovements(); }}
-          item={addStockItem}
-        />
-
-        <EditProductModal
-          item={editProductItem}
-          isOpen={editProductItem != null}
-          onClose={() => setEditProductItem(null)}
-          onSuccess={() => {
-            refreshItems();
-            if (activeTab === 'movements') refreshMovements();
-          }}
-        />
-
-        {loading && activeTab !== 'movements' ? (
-          <div className="animate-pulse bg-white rounded-lg border border-slate-200 p-8">
-            <div className="h-4 bg-slate-200 rounded w-1/3 mb-4" />
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-10 bg-slate-100 rounded" />
-              ))}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setWarehouseView('warehouse')}
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                  warehouseView === 'warehouse'
+                    ? 'bg-violet-600 text-white shadow-sm'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {t('dashboard.tabWarehouse')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setWarehouseView('storefront')}
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                  warehouseView === 'storefront'
+                    ? 'bg-violet-600 text-white shadow-sm'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {t('dashboard.tabStorefront')}
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSalesModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+              >
+                <Banknote className="h-4 w-4" />
+                {t('dashboard.recordSale')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"
+              >
+                <Plus className="h-4 w-4" />
+                {t('dashboard.addProduct')}
+              </button>
             </div>
           </div>
-        ) : activeTab === 'movements' ? (
-          <MovementHistoryPanel
-            movements={movements}
-            movementsLoading={movementsLoading}
-            movementsTotalCount={movementsTotalCount}
-            movementsTotalSalesBs={movementsTotalSalesBs}
-            movementsPage={movementsPage}
-            movementsPageSize={movementsPageSize}
-            onMovementsPageChange={setMovementsPage}
-            onMovementsPageSizeChange={(n) => {
-              setMovementsPage(1);
-              setMovementsPageSize(n);
-            }}
-            inventoryItems={items}
-            movementFilter={movementFilter}
-            onFilterChange={(val) => {
-              setMovementFilter(val);
-              setMovementsPage(1);
-            }}
-            exportExcelLoading={exportExcelLoading}
-            onExportExcel={handleExportExcel}
+
+          {loading ? (
+            <div className="animate-pulse rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="h-4 w-1/3 rounded bg-slate-200" />
+              <div className="mt-4 space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-10 rounded bg-slate-100" />
+                ))}
+              </div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+              <Package className="mx-auto h-10 w-10 text-slate-300" />
+              <p className="mt-3 text-sm font-medium text-slate-700">{t('dashboard.emptyInventory')}</p>
+            </div>
+          ) : warehouseView === 'warehouse' ? (
+            <InventoryListChrome
+              searchValue={inventorySearch}
+              onSearchChange={handleInventorySearchChange}
+              page={safePage}
+              pageSize={inventoryPageSize}
+              totalPages={totalPages}
+              totalFiltered={totalFiltered}
+              onPageChange={setInventoryPage}
+              onPageSizeChange={handleInventoryPageSizeChange}
+            >
+              {totalFiltered === 0 ? (
+                <div className="px-4 py-12 text-center text-sm text-slate-500">
+                  {t('dashboard.inventoryNoMatches')}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50/90 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <th className="px-4 py-3">{t('dashboard.sku')}</th>
+                        <th className="px-4 py-3">{t('dashboard.name')}</th>
+                        <th className="px-4 py-3">{t('dashboard.boxes')}</th>
+                        <th className="px-4 py-3">{t('dashboard.rollsPerBox')}</th>
+                        <th className="px-4 py-3">{t('dashboard.totalStock')}</th>
+                        <th className="px-4 py-3">{t('erp.colStock')}</th>
+                        <th className="px-4 py-3 text-right">{t('dashboard.action')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {inventoryPaged.map((item) => {
+                        const total = item.wholesaleQuantity * item.rollsPerBox;
+                        const wLevel = warehouseStockLevel(item);
+                        const key = `w-${item.id}`;
+                        return (
+                          <tr key={item.id} className="hover:bg-slate-50/80">
+                            <td className="px-4 py-3 font-medium tabular-nums text-slate-900">{item.sku}</td>
+                            <td className="px-4 py-3 text-slate-700">{item.name}</td>
+                            <td className="px-4 py-3 tabular-nums text-slate-600">{item.wholesaleQuantity}</td>
+                            <td className="px-4 py-3 tabular-nums text-slate-600">{item.rollsPerBox}</td>
+                            <td className="px-4 py-3 font-medium tabular-nums text-slate-800">{total}</td>
+                            <td className="px-4 py-3">
+                              <StockBadge level={wLevel} labels={badgeLabels} />
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <WarehouseRowActionsDropdown
+                                open={openMenuKey === key}
+                                onOpenChange={(open) => setOpenMenuKey(open ? key : null)}
+                                onEdit={() => setEditProductItem(item)}
+                                onAddStock={() => setAddStockItem(item)}
+                                onOpenBox={() => handleOpenBoxClick(item.id)}
+                                openBoxDisabled={item.wholesaleQuantity < 1 || openBoxLoading}
+                                labels={rowActionLabels}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </InventoryListChrome>
+          ) : (
+            <InventoryListChrome
+              searchValue={inventorySearch}
+              onSearchChange={handleInventorySearchChange}
+              page={safePage}
+              pageSize={inventoryPageSize}
+              totalPages={totalPages}
+              totalFiltered={totalFiltered}
+              onPageChange={setInventoryPage}
+              onPageSizeChange={handleInventoryPageSizeChange}
+            >
+              {totalFiltered === 0 ? (
+                <div className="px-4 py-12 text-center text-sm text-slate-500">
+                  {t('dashboard.inventoryNoMatches')}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50/90 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <th className="px-4 py-3">{t('dashboard.sku')}</th>
+                        <th className="px-4 py-3">{t('dashboard.name')}</th>
+                        <th className="px-4 py-3">{t('dashboard.available')}</th>
+                        <th className="px-4 py-3">{t('erp.colStock')}</th>
+                        <th className="px-4 py-3">{t('dashboard.priceRoll')}</th>
+                        <th className="px-4 py-3">{t('dashboard.priceM')}</th>
+                        <th className="px-4 py-3 text-right">{t('dashboard.action')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {inventoryPaged.map((item) => {
+                        const sLevel = storefrontStockLevel(item);
+                        const key = `s-${item.id}`;
+                        return (
+                          <tr key={item.id} className="hover:bg-slate-50/80">
+                            <td className="px-4 py-3 font-medium tabular-nums text-slate-900">{item.sku}</td>
+                            <td className="px-4 py-3 text-slate-700">{item.name}</td>
+                            <td className="px-4 py-3 font-medium tabular-nums text-slate-800">
+                              {formatRetailQuantity(
+                                item,
+                                t('inventory.unitMt'),
+                                t('inventory.unitUnits')
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <StockBadge level={sLevel} labels={badgeLabels} />
+                            </td>
+                            <td className="px-4 py-3 tabular-nums text-slate-600">
+                              Bs {item.pricePerRoll.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3 tabular-nums text-slate-600">
+                              Bs {item.pricePerMeter.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <StorefrontRowActionsDropdown
+                                open={openMenuKey === key}
+                                onOpenChange={(open) => setOpenMenuKey(open ? key : null)}
+                                onEdit={() => setEditProductItem(item)}
+                                labels={{ more: rowActionLabels.more, edit: rowActionLabels.edit }}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </InventoryListChrome>
+          )}
+        </div>
+      )}
+
+      {activeNav === 'sales' && (
+        <div className="mx-auto max-w-7xl space-y-6">
+          <KpiStrip
+            loading={kpiLoading}
+            inventoryValueLabel={kpiProps.inventoryValueLabel}
+            inventoryValueHint={t('erp.kpiInventoryValueHint')}
+            stockHealthLabel={kpiProps.stockHealthLabel}
+            stockHealthHint={t('erp.kpiStockHealthHint')}
+            lowStockCount={kpiProps.lowStockCount}
+            lowStockHint={t('erp.kpiLowStockHint')}
+            lowStockStress={kpiProps.lowStockStress}
+            fourthTitle={kpiProps.fourthTitle}
+            fourthValue={kpiProps.fourthValue}
+            fourthHint={kpiProps.fourthHint}
           />
-        ) : items.length === 0 ? (
-          <div className="bg-white rounded-lg border border-slate-200 p-8 text-center text-slate-500">
-            {t('dashboard.emptyInventory')}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setSalesModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+            >
+              <Banknote className="h-4 w-4" />
+              {t('dashboard.recordSale')}
+            </button>
           </div>
-        ) : activeTab === 'warehouse' ? (
-          <InventoryListChrome
-            searchValue={inventorySearch}
-            onSearchChange={handleInventorySearchChange}
-            page={safePage}
-            pageSize={inventoryPageSize}
-            totalPages={totalPages}
-            totalFiltered={totalFiltered}
-            onPageChange={setInventoryPage}
-            onPageSizeChange={handleInventoryPageSizeChange}
-          >
-            {totalFiltered === 0 ? (
-              <div className="px-4 py-12 text-center text-sm text-slate-500">
-                {t('dashboard.inventoryNoMatches')}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.sku')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.name')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.boxes')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.rollsPerBox')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.totalStock')}</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.action')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {inventoryPaged.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="px-4 py-3 text-sm font-medium text-slate-900">{item.sku}</td>
-                        <td className="px-4 py-3 text-sm text-slate-600">{item.name}</td>
-                        <td className="px-4 py-3 text-sm text-slate-600">{item.wholesaleQuantity}</td>
-                        <td className="px-4 py-3 text-sm text-slate-600">{item.rollsPerBox}</td>
-                        <td className="px-4 py-3 text-sm text-slate-600 font-medium">
-                          {item.wholesaleQuantity * item.rollsPerBox}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setEditProductItem(item)}
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
-                              title={t('editProduct.editTooltip')}
-                            >
-                              <Pencil className="h-4 w-4" aria-hidden />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setAddStockItem(item)}
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition"
-                              title={t('dashboard.addStockTitle')}
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                              </svg>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenBoxClick(item.id)}
-                              disabled={item.wholesaleQuantity < 1 || openBoxLoading}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                            >
-                              {t('dashboard.openBox')}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </InventoryListChrome>
-        ) : (
-          <InventoryListChrome
-            searchValue={inventorySearch}
-            onSearchChange={handleInventorySearchChange}
-            page={safePage}
-            pageSize={inventoryPageSize}
-            totalPages={totalPages}
-            totalFiltered={totalFiltered}
-            onPageChange={setInventoryPage}
-            onPageSizeChange={handleInventoryPageSizeChange}
-          >
-            {totalFiltered === 0 ? (
-              <div className="px-4 py-12 text-center text-sm text-slate-500">
-                {t('dashboard.inventoryNoMatches')}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.sku')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.name')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.available')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.priceRoll')}</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.priceM')}</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">{t('dashboard.action')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {inventoryPaged.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50">
-                        <td className="px-4 py-3 text-sm font-medium text-slate-900">{item.sku}</td>
-                        <td className="px-4 py-3 text-sm text-slate-600">{item.name}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-slate-700">
-                          {formatRetailQuantity(
-                            item,
-                            t('inventory.unitMt'),
-                            t('inventory.unitUnits')
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-slate-600">Bs {item.pricePerRoll.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-sm text-slate-600">Bs {item.pricePerMeter.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setEditProductItem(item)}
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
-                            title={t('editProduct.editTooltip')}
-                          >
-                            <Pencil className="h-4 w-4" aria-hidden />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </InventoryListChrome>
-        )}
-      </main>
-    </div>
+          <div className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-950/[0.02]">
+            <MovementHistoryPanel
+              movements={movements}
+              movementsLoading={movementsLoading}
+              movementsTotalCount={movementsTotalCount}
+              movementsTotalSalesBs={movementsTotalSalesBs}
+              movementsPage={movementsPage}
+              movementsPageSize={movementsPageSize}
+              onMovementsPageChange={setMovementsPage}
+              onMovementsPageSizeChange={(n) => {
+                setMovementsPage(1);
+                setMovementsPageSize(n);
+              }}
+              inventoryItems={items}
+              movementFilter={movementFilter}
+              onFilterChange={(val) => {
+                setMovementFilter(val);
+                setMovementsPage(1);
+              }}
+              exportExcelLoading={exportExcelLoading}
+              onExportExcel={handleExportExcel}
+            />
+          </div>
+        </div>
+      )}
+
+      {activeNav === 'users' && isAdmin && (
+        <div className="mx-auto max-w-7xl">
+          <UsersPanel search={userSearch} />
+        </div>
+      )}
+
+      {activeNav === 'users' && !isAdmin && (
+        <div className="mx-auto max-w-xl rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <p className="text-sm text-slate-600">{t('erp.usersAdminOnly')}</p>
+        </div>
+      )}
+
+      {activeNav === 'settings' && (
+        <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-10 shadow-sm ring-1 ring-slate-950/[0.02]">
+          <h2 className="text-lg font-semibold text-slate-900">{t('erp.settingsTitle')}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">{t('erp.settingsComingSoon')}</p>
+        </div>
+      )}
+    </AppShell>
   );
 }

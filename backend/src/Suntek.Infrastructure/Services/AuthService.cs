@@ -22,6 +22,9 @@ public class AuthService(
         if (!result.Succeeded)
             throw new UnauthorizedAccessException("Invalid email or password.");
 
+        user.LastLoginAt = DateTime.UtcNow;
+        await userManager.UpdateAsync(user);
+
         var roles = await userManager.GetRolesAsync(user);
         var expiresAt = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ExpirationMinutes", 60));
         var jwtToken = JwtBearer.CreateToken(o =>
@@ -39,11 +42,15 @@ public class AuthService(
         return new AuthResult(jwtToken, user.Email ?? string.Empty, [..roles], expiresAt);
     }
 
-    public async Task<RegisterResult> RegisterAsync(string fullName, string email, string password, CancellationToken ct = default)
+    public async Task<RegisterResult> RegisterAsync(string fullName, string email, string password, string? role, CancellationToken ct = default)
     {
         var existingUser = await userManager.FindByEmailAsync(email);
         if (existingUser != null)
             throw new InvalidOperationException("A user with this email already exists.");
+
+        var roleName = string.IsNullOrWhiteSpace(role) ? AppRoles.Operator : role.Trim();
+        if (roleName is not (AppRoles.Admin or AppRoles.Operator))
+            throw new InvalidOperationException("Role must be Admin or Operator.");
 
         var user = new AppUser
         {
@@ -60,7 +67,7 @@ public class AuthService(
             throw new InvalidOperationException(errors);
         }
 
-        await userManager.AddToRoleAsync(user, AppRoles.Operator);
+        await userManager.AddToRoleAsync(user, roleName);
 
         return new RegisterResult(user.Id, user.Email ?? string.Empty, user.FullName, "Registration successful. You can now log in.");
     }

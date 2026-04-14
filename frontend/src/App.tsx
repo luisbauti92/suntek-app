@@ -5,7 +5,6 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { SessionExpiredModal } from './components/SessionExpiredModal';
 import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
 import { InventoryDashboard } from './pages/InventoryDashboard';
 
 function App() {
@@ -17,7 +16,6 @@ function App() {
         <SessionExpiredModal />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route
             path="/dashboard"
             element={
