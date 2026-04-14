@@ -74,6 +74,8 @@ export interface RegisterRequest {
   fullName: string;
   email: string;
   password: string;
+  /** Admin or Operator; omit for Operator. */
+  role?: string;
 }
 
 export interface RegisterResponse {
@@ -86,6 +88,22 @@ export interface RegisterResponse {
 export const authApi = {
   login: (data: LoginRequest) => apiClient.post<LoginResponse>('/auth/login', data),
   register: (data: RegisterRequest) => apiClient.post<RegisterResponse>('/auth/register', data),
+};
+
+// Users (admin)
+export type UserAccountStatus = 'Active' | 'Inactive' | 'Locked';
+
+export interface UserListItemDto {
+  id: string;
+  fullName: string;
+  email: string;
+  roles: string[];
+  status: UserAccountStatus;
+  lastLoginAt: string | null;
+}
+
+export const usersApi = {
+  list: () => apiClient.get<UserListItemDto[]>('/users'),
 };
 
 // Inventory

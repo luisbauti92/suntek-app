@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -99,13 +99,6 @@ export function LoginPage() {
               {isSubmitting ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
-
-          <p className="mt-6 text-center text-sm text-slate-500">
-            {t('auth.noAccount')}{' '}
-            <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-              {t('auth.register')}
-            </Link>
-          </p>
         </div>
       </div>
     </div>

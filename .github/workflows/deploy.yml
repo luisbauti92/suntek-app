@@ -51,3 +51,11 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/suntek-app-catalog:latest
           build-args: |
             VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
+
+      # 4. Trigger Deployment in Dokploy
+      - name: Deploy to Dokploy
+        run: |
+          echo "Despertando a los servicios en Dokploy..."
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_API }}"
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_ADMIN }}"
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_CATALOG }}"
