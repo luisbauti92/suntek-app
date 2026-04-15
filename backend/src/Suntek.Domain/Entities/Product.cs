@@ -16,6 +16,7 @@ public class Product
     public UnitType UnitType { get; set; }
     public int WholesaleQuantity { get; set; }
     public decimal RetailQuantity { get; set; }
+    public ProductStatus Status { get; set; } = ProductStatus.Active;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

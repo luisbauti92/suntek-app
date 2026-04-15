@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Box, MoreHorizontal, Pencil, Plus } from 'lucide-react';
+import { Archive, Ban, Box, MoreHorizontal, Pencil, Plus } from 'lucide-react';
 import { useClickOutside } from '../hooks/useClickOutside';
 
 interface WarehouseRowActionsProps {
@@ -9,8 +9,19 @@ interface WarehouseRowActionsProps {
   onEdit: () => void;
   onAddStock: () => void;
   onOpenBox: () => void;
+  onDiscontinue: () => void;
+  discontinueDisabled: boolean;
+  onArchive: () => void;
+  archiveDisabled: boolean;
   openBoxDisabled: boolean;
-  labels: { more: string; edit: string; addStock: string; openBox: string };
+  labels: {
+    more: string;
+    edit: string;
+    addStock: string;
+    openBox: string;
+    discontinue: string;
+    archive: string;
+  };
 }
 
 export function WarehouseRowActionsDropdown({
@@ -19,6 +30,10 @@ export function WarehouseRowActionsDropdown({
   onEdit,
   onAddStock,
   onOpenBox,
+  onDiscontinue,
+  discontinueDisabled,
+  onArchive,
+  archiveDisabled,
   openBoxDisabled,
   labels,
 }: WarehouseRowActionsProps) {
@@ -86,6 +101,34 @@ export function WarehouseRowActionsDropdown({
             <button
               type="button"
               role="menuitem"
+              disabled={discontinueDisabled}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => {
+                if (discontinueDisabled) return;
+                onOpenChange(false);
+                onDiscontinue();
+              }}
+            >
+              <Ban className="h-4 w-4 text-orange-600" />
+              {labels.discontinue}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              disabled={archiveDisabled}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => {
+                if (archiveDisabled) return;
+                onOpenChange(false);
+                onArchive();
+              }}
+            >
+              <Archive className="h-4 w-4 text-amber-600" />
+              {labels.archive}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
               disabled={openBoxDisabled}
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() => {
@@ -108,13 +151,21 @@ interface StorefrontRowActionsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEdit: () => void;
-  labels: { more: string; edit: string };
+  onDiscontinue: () => void;
+  discontinueDisabled: boolean;
+  onArchive: () => void;
+  archiveDisabled: boolean;
+  labels: { more: string; edit: string; discontinue: string; archive: string };
 }
 
 export function StorefrontRowActionsDropdown({
   open,
   onOpenChange,
   onEdit,
+  onDiscontinue,
+  discontinueDisabled,
+  onArchive,
+  archiveDisabled,
   labels,
 }: StorefrontRowActionsProps) {
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -164,6 +215,34 @@ export function StorefrontRowActionsDropdown({
             >
               <Pencil className="h-4 w-4 text-slate-400" />
               {labels.edit}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              disabled={discontinueDisabled}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => {
+                if (discontinueDisabled) return;
+                onOpenChange(false);
+                onDiscontinue();
+              }}
+            >
+              <Ban className="h-4 w-4 text-orange-600" />
+              {labels.discontinue}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              disabled={archiveDisabled}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => {
+                if (archiveDisabled) return;
+                onOpenChange(false);
+                onArchive();
+              }}
+            >
+              <Archive className="h-4 w-4 text-amber-600" />
+              {labels.archive}
             </button>
           </div>,
           document.body

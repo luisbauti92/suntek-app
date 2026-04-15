@@ -32,6 +32,7 @@ public class RegisterStockResponse
     public UnitType UnitType { get; set; }
     public int WholesaleQuantity { get; set; }
     public decimal RetailQuantity { get; set; }
+    public ProductStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
@@ -62,6 +63,7 @@ public class RegisterStockEndpoint(IMediator mediator) : Endpoint<RegisterStockR
             UnitType = result.UnitType,
             WholesaleQuantity = result.WholesaleQuantity,
             RetailQuantity = result.RetailQuantity,
+            Status = result.Status,
             CreatedAt = result.CreatedAt
         };
         await Send.OkAsync(Response, ct);

@@ -15,4 +15,5 @@ public record ProductDto(
     UnitType UnitType,
     int WholesaleQuantity,
     decimal RetailQuantity,
+    ProductStatus Status,
     DateTime CreatedAt);

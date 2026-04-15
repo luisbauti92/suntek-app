@@ -35,7 +35,7 @@ public class RegisterStockCommandHandler(
             await movementRepository.AddAsync(movement, ct);
             return new ProductDto(existing.Id, existing.Sku, existing.Name, existing.Quantity,
                 existing.Length, existing.Width, existing.PricePerRoll, existing.PricePerMeter,
-                existing.RollsPerBox, existing.UnitType, existing.WholesaleQuantity, existing.RetailQuantity, existing.CreatedAt);
+                existing.RollsPerBox, existing.UnitType, existing.WholesaleQuantity, existing.RetailQuantity, existing.Status, existing.CreatedAt);
         }
 
         var product = new Product
@@ -67,6 +67,6 @@ public class RegisterStockCommandHandler(
         await movementRepository.AddAsync(registerMovement, ct);
         return new ProductDto(added.Id, added.Sku, added.Name, added.Quantity,
             added.Length, added.Width, added.PricePerRoll, added.PricePerMeter,
-            added.RollsPerBox, added.UnitType, added.WholesaleQuantity, added.RetailQuantity, added.CreatedAt);
+            added.RollsPerBox, added.UnitType, added.WholesaleQuantity, added.RetailQuantity, added.Status, added.CreatedAt);
     }
 }

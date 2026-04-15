@@ -58,6 +58,7 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
             product.UnitType,
             product.WholesaleQuantity,
             product.RetailQuantity,
+            product.Status,
             product.CreatedAt);
 
         return new UpdateProductResult(dto, null);

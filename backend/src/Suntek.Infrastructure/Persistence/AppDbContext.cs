@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Suntek.Domain.Entities;
+using Suntek.Domain.Enums;
 using Suntek.Infrastructure.Identity;
 
 namespace Suntek.Infrastructure.Persistence;
@@ -22,6 +23,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.ToTable("InventoryItems");
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Sku).IsUnique();
+            e.HasQueryFilter(x => x.Status != ProductStatus.Archived);
         });
         modelBuilder.Entity<Sale>(e =>
         {
