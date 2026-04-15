@@ -70,7 +70,7 @@ public class RecordSaleCommandHandler(
 
         var dto = new ProductDto(product.Id, product.Sku, product.Name, product.Quantity,
             product.Length, product.Width, product.PricePerRoll, product.PricePerMeter,
-            product.RollsPerBox, product.UnitType, product.WholesaleQuantity, product.RetailQuantity, product.CreatedAt);
+            product.RollsPerBox, product.UnitType, product.WholesaleQuantity, product.RetailQuantity, product.Status, product.CreatedAt);
         return new RecordSaleResult(true, null, dto);
     }
 }

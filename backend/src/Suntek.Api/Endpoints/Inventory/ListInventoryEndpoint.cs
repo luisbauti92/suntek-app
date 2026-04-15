@@ -19,10 +19,17 @@ public class ProductDto
     public UnitType UnitType { get; set; }
     public int WholesaleQuantity { get; set; }
     public decimal RetailQuantity { get; set; }
+    public ProductStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
-public class ListInventoryEndpoint(IMediator mediator) : EndpointWithoutRequest<List<ProductDto>>
+public class ListInventoryRequest
+{
+    // active (default), discontinued, archived
+    public string? Status { get; set; }
+}
+
+public class ListInventoryEndpoint(IMediator mediator) : Endpoint<ListInventoryRequest, List<ProductDto>>
 {
     public override void Configure()
     {
@@ -30,9 +37,23 @@ public class ListInventoryEndpoint(IMediator mediator) : EndpointWithoutRequest<
         Roles(AppRoles.Admin, AppRoles.Operator);
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(ListInventoryRequest req, CancellationToken ct)
     {
-        var products = await mediator.Send(new GetProductsQuery(), ct);
+        ProductStatus? status = req.Status?.Trim().ToLowerInvariant() switch
+        {
+            "active" or null or "" => ProductStatus.Active,
+            "discontinued" => ProductStatus.Discontinued,
+            "archived" => ProductStatus.Archived,
+            _ => null
+        };
+        if (req.Status is not null && status is null)
+        {
+            AddError(r => r.Status, "Status must be active, discontinued, or archived.");
+            ThrowIfAnyErrors();
+            return;
+        }
+
+        var products = await mediator.Send(new GetProductsQuery(status), ct);
         Response = products
             .Select(p => new ProductDto
             {
@@ -48,6 +69,7 @@ public class ListInventoryEndpoint(IMediator mediator) : EndpointWithoutRequest<
                 UnitType = p.UnitType,
                 WholesaleQuantity = p.WholesaleQuantity,
                 RetailQuantity = p.RetailQuantity,
+                Status = p.Status,
                 CreatedAt = p.CreatedAt
             })
             .ToList();

@@ -110,6 +110,8 @@ export const usersApi = {
 export type UnitType = 'Meters' | 'Units';
 /** API may return 0/1 until JsonStringEnumConverter is enabled */
 export type UnitTypeResponse = UnitType | 0 | 1;
+export type ProductStatus = 'Active' | 'Discontinued' | 'Archived';
+export type InventoryStatusFilter = 'active' | 'discontinued' | 'archived';
 
 export interface InventoryItemDto {
   id: number;
@@ -124,6 +126,7 @@ export interface InventoryItemDto {
   unitType: UnitTypeResponse;
   wholesaleQuantity: number;
   retailQuantity: number;
+  status: ProductStatus;
   createdAt: string;
 }
 
@@ -165,11 +168,14 @@ export interface AdjustStockResponse {
 }
 
 export const inventoryApi = {
-  list: () => apiClient.get<InventoryItemDto[]>('/inventory'),
+  list: (status: InventoryStatusFilter = 'active') =>
+    apiClient.get<InventoryItemDto[]>('/inventory', { params: { status } }),
   register: (data: RegisterStockRequest) =>
     apiClient.post<InventoryItemDto>('/inventory', data),
   update: (id: number, data: UpdateProductRequest) =>
     apiClient.put<InventoryItemDto>(`/inventory/${id}`, data),
+  updateStatus: (id: number, status: ProductStatus) =>
+    apiClient.patch<void>(`/products/${id}/status`, { status }),
   openBox: (productId: number) =>
     apiClient.post<InventoryItemDto>(`/inventory/${productId}/open-box`, {}),
   adjustStock: (data: AdjustStockRequest) =>

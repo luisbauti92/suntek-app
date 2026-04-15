@@ -30,6 +30,7 @@ public class UpdateInventoryResponse
     public UnitType UnitType { get; set; }
     public int WholesaleQuantity { get; set; }
     public decimal RetailQuantity { get; set; }
+    public ProductStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
@@ -77,6 +78,7 @@ public class UpdateInventoryEndpoint(IMediator mediator) : Endpoint<UpdateInvent
             UnitType = p.UnitType,
             WholesaleQuantity = p.WholesaleQuantity,
             RetailQuantity = p.RetailQuantity,
+            Status = p.Status,
             CreatedAt = p.CreatedAt,
         };
         await Send.OkAsync(Response, ct);

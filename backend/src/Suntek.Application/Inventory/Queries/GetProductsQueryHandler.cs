@@ -8,10 +8,10 @@ public class GetProductsQueryHandler(IProductRepository productRepository) : IRe
 {
     public async Task<IReadOnlyList<ProductDto>> Handle(GetProductsQuery request, CancellationToken ct)
     {
-        var products = await productRepository.GetAllAsync(ct);
+        var products = await productRepository.GetAllAsync(request.Status, ct);
         return products
             .Select(p => new ProductDto(p.Id, p.Sku, p.Name, p.Quantity, p.Length, p.Width, p.PricePerRoll, p.PricePerMeter,
-                p.RollsPerBox, p.UnitType, p.WholesaleQuantity, p.RetailQuantity, p.CreatedAt))
+                p.RollsPerBox, p.UnitType, p.WholesaleQuantity, p.RetailQuantity, p.Status, p.CreatedAt))
             .ToList();
     }
 }

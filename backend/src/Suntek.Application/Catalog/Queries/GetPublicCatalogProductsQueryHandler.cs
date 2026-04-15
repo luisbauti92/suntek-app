@@ -12,7 +12,7 @@ public class GetPublicCatalogProductsQueryHandler(IProductRepository productRepo
         GetPublicCatalogProductsQuery request,
         CancellationToken ct)
     {
-        var products = await productRepository.GetAllAsync(ct);
+        var products = await productRepository.GetAllAsync(ct: ct);
         return products.Select(Map).ToList();
     }
 

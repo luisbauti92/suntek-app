@@ -3,7 +3,7 @@ import { Banknote, ChevronLeft, ChevronRight, Package, Plus, Search, ShoppingCar
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { inventoryApi, salesApi, usersApi } from '../api/client';
+import { inventoryApi, salesApi, usersApi, type InventoryStatusFilter } from '../api/client';
 import { ProductForm } from '../components/ProductForm';
 import { EditProductModal } from '../components/EditProductModal';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -204,12 +204,17 @@ export function InventoryDashboard() {
   const [inventorySearch, setInventorySearch] = useState('');
   const [inventoryPage, setInventoryPage] = useState(1);
   const [inventoryPageSize, setInventoryPageSize] = useState(25);
+  const [inventoryStatusFilter, setInventoryStatusFilter] = useState<InventoryStatusFilter>('active');
   const [userSearch, setUserSearch] = useState('');
   const [directoryUsers, setDirectoryUsers] = useState<UserListItemDto[]>([]);
   const [directoryLoading, setDirectoryLoading] = useState(() =>
     Boolean(user?.roles?.includes('Admin'))
   );
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
+  const [discontinueItemId, setDiscontinueItemId] = useState<number | null>(null);
+  const [discontinueLoading, setDiscontinueLoading] = useState(false);
+  const [archiveItemId, setArchiveItemId] = useState<number | null>(null);
+  const [archiveLoading, setArchiveLoading] = useState(false);
 
   const { paged: inventoryPaged, totalFiltered, totalPages, safePage } =
     useClientInventoryPaging(items, inventorySearch, inventoryPage, inventoryPageSize);
@@ -239,11 +244,11 @@ export function InventoryDashboard() {
   const refreshItems = useCallback(() => {
     setLoading(true);
     inventoryApi
-      .list()
+      .list(inventoryStatusFilter)
       .then((res) => setItems(res.data))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [inventoryStatusFilter]);
 
   useEffect(() => {
     refreshItems();
@@ -309,6 +314,14 @@ export function InventoryDashboard() {
     setOpenBoxProductId(productId);
   }
 
+  function handleArchiveClick(productId: number) {
+    setArchiveItemId(productId);
+  }
+
+  function handleDiscontinueClick(productId: number) {
+    setDiscontinueItemId(productId);
+  }
+
   async function handleExportExcel() {
     setExportExcelLoading(true);
     try {
@@ -334,6 +347,37 @@ export function InventoryDashboard() {
       /* keep modal */
     } finally {
       setOpenBoxLoading(false);
+    }
+  }
+
+  async function handleArchiveConfirm() {
+    if (archiveItemId == null) return;
+    setArchiveLoading(true);
+    try
+    {
+      await inventoryApi.updateStatus(archiveItemId, 'Archived');
+      setArchiveItemId(null);
+      refreshItems();
+      toast.success(t('erp.archiveSuccess'));
+    } catch {
+      toast.error(t('erp.archiveFailed'));
+    } finally {
+      setArchiveLoading(false);
+    }
+  }
+
+  async function handleDiscontinueConfirm() {
+    if (discontinueItemId == null) return;
+    setDiscontinueLoading(true);
+    try {
+      await inventoryApi.updateStatus(discontinueItemId, 'Discontinued');
+      setDiscontinueItemId(null);
+      refreshItems();
+      toast.success(t('erp.discontinueSuccess'));
+    } catch {
+      toast.error(t('erp.discontinueFailed'));
+    } finally {
+      setDiscontinueLoading(false);
     }
   }
 
@@ -381,6 +425,8 @@ export function InventoryDashboard() {
     edit: t('editProduct.editTooltip'),
     addStock: t('dashboard.addStockTitle'),
     openBox: t('dashboard.openBox'),
+    discontinue: t('erp.discontinueAction'),
+    archive: t('erp.archiveAction'),
   };
 
   return (
@@ -421,6 +467,24 @@ export function InventoryDashboard() {
         message={t('dashboard.openBoxMessage')}
         confirmLabel={t('dashboard.openBox')}
         isLoading={openBoxLoading}
+      />
+      <ConfirmModal
+        isOpen={discontinueItemId != null}
+        onClose={() => setDiscontinueItemId(null)}
+        onConfirm={handleDiscontinueConfirm}
+        title={t('erp.discontinueTitle')}
+        message={t('erp.discontinueMessage')}
+        confirmLabel={t('erp.discontinueAction')}
+        isLoading={discontinueLoading}
+      />
+      <ConfirmModal
+        isOpen={archiveItemId != null}
+        onClose={() => setArchiveItemId(null)}
+        onConfirm={handleArchiveConfirm}
+        title={t('erp.archiveTitle')}
+        message={t('erp.archiveMessage')}
+        confirmLabel={t('erp.archiveAction')}
+        isLoading={archiveLoading}
       />
 
       <AddStockModal
@@ -527,6 +591,40 @@ export function InventoryDashboard() {
               >
                 {t('dashboard.tabStorefront')}
               </button>
+              <div className="ml-2 h-6 w-px bg-slate-200" />
+              <button
+                type="button"
+                onClick={() => setInventoryStatusFilter('active')}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
+                  inventoryStatusFilter === 'active'
+                    ? 'bg-violet-100 text-violet-800 ring-1 ring-violet-200'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {t('erp.filterActive')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryStatusFilter('discontinued')}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
+                  inventoryStatusFilter === 'discontinued'
+                    ? 'bg-orange-100 text-orange-900 ring-1 ring-orange-200'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {t('erp.filterDiscontinued')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setInventoryStatusFilter('archived')}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
+                  inventoryStatusFilter === 'archived'
+                    ? 'bg-amber-100 text-amber-900 ring-1 ring-amber-200'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {t('erp.filterArchived')}
+              </button>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -560,7 +658,13 @@ export function InventoryDashboard() {
           ) : items.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
               <Package className="mx-auto h-10 w-10 text-slate-300" />
-              <p className="mt-3 text-sm font-medium text-slate-700">{t('dashboard.emptyInventory')}</p>
+              <p className="mt-3 text-sm font-medium text-slate-700">
+                {inventoryStatusFilter === 'archived'
+                  ? t('erp.filterArchived')
+                  : inventoryStatusFilter === 'discontinued'
+                    ? t('erp.filterDiscontinued')
+                  : t('dashboard.emptyInventory')}
+              </p>
             </div>
           ) : warehouseView === 'warehouse' ? (
             <InventoryListChrome
@@ -613,6 +717,10 @@ export function InventoryDashboard() {
                                 onEdit={() => setEditProductItem(item)}
                                 onAddStock={() => setAddStockItem(item)}
                                 onOpenBox={() => handleOpenBoxClick(item.id)}
+                                onDiscontinue={() => handleDiscontinueClick(item.id)}
+                                discontinueDisabled={inventoryStatusFilter !== 'active' || !isAdmin}
+                                onArchive={() => handleArchiveClick(item.id)}
+                                archiveDisabled={inventoryStatusFilter === 'archived' || !isAdmin}
                                 openBoxDisabled={item.wholesaleQuantity < 1 || openBoxLoading}
                                 labels={rowActionLabels}
                               />
@@ -683,7 +791,16 @@ export function InventoryDashboard() {
                                 open={openMenuKey === key}
                                 onOpenChange={(open) => setOpenMenuKey(open ? key : null)}
                                 onEdit={() => setEditProductItem(item)}
-                                labels={{ more: rowActionLabels.more, edit: rowActionLabels.edit }}
+                                onDiscontinue={() => handleDiscontinueClick(item.id)}
+                                discontinueDisabled={inventoryStatusFilter !== 'active' || !isAdmin}
+                                onArchive={() => handleArchiveClick(item.id)}
+                                archiveDisabled={inventoryStatusFilter === 'archived' || !isAdmin}
+                                labels={{
+                                  more: rowActionLabels.more,
+                                  edit: rowActionLabels.edit,
+                                  discontinue: rowActionLabels.discontinue,
+                                  archive: rowActionLabels.archive,
+                                }}
                               />
                             </td>
                           </tr>

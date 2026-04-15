@@ -49,7 +49,7 @@ public class AdjustStockCommandHandler(
             resultDto = new ProductDto(product.Id, product.Sku, product.Name, product.Quantity,
                 product.Length, product.Width, product.PricePerRoll, product.PricePerMeter,
                 product.RollsPerBox, product.UnitType, product.WholesaleQuantity, product.RetailQuantity,
-                product.CreatedAt);
+                product.Status, product.CreatedAt);
         }, ct);
 
         return resultDto;
