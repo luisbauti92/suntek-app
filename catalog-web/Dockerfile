@@ -6,9 +6,12 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
+# Instalar pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Copy dependency manifests first to leverage Docker layer caching.
-COPY package*.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copy the full source tree and compile.
 COPY . .
@@ -17,7 +20,7 @@ COPY . .
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
-RUN npm run build
+RUN pnpm run build
 
 #####################################
 # Stage 2: Serve with Nginx
