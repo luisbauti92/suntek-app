@@ -28,7 +28,7 @@ import {
   storefrontStockLevel,
   warehouseStockLevel,
 } from '../utils/inventoryMetrics';
-import { formatBs } from '../utils/formatBs';
+import { formatBs, formatNumber } from '../utils/formatBs';
 
 const SIDEBAR_KEY = 'suntek_erp_sidebar_collapsed';
 
@@ -39,7 +39,7 @@ function formatRetailQuantity(
 ): string {
   const isMeters = item.unitType === 'Meters' || item.unitType === 0;
   if (isMeters) {
-    return `${Number(item.retailQuantity).toFixed(2)} ${unitMt}`;
+    return `${formatNumber(Number(item.retailQuantity))} ${unitMt}`;
   }
   return `${Math.round(item.retailQuantity)} ${unitUnits}`;
 }
@@ -781,10 +781,10 @@ export function InventoryDashboard() {
                               <StockBadge level={sLevel} labels={badgeLabels} />
                             </td>
                             <td className="px-4 py-3 tabular-nums text-slate-600">
-                              Bs {item.pricePerRoll.toFixed(2)}
+                              {formatBs(item.pricePerRoll)}
                             </td>
                             <td className="px-4 py-3 tabular-nums text-slate-600">
-                              Bs {item.pricePerMeter.toFixed(2)}
+                              {formatBs(item.pricePerMeter)}
                             </td>
                             <td className="px-4 py-3 text-right">
                               <StorefrontRowActionsDropdown
