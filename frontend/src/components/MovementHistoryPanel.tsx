@@ -1,4 +1,5 @@
 import { Fragment, useMemo } from 'react';
+import { formatBs, formatNumber } from '../utils/formatBs';
 import {
   AlertTriangle,
   ChevronLeft,
@@ -16,9 +17,7 @@ import { MovementFilterBar, type MovementFilterValue } from './MovementFilterBar
 import type { InventoryItemDto, MovementDto } from '../api/client';
 import { useLanguage } from '../contexts/LanguageContext';
 
-function formatBs(n: number): string {
-  return `Bs ${n.toFixed(2)}`;
-}
+
 
 function isSameLocalDay(a: Date, b: Date): boolean {
   return (
@@ -321,7 +320,7 @@ export function MovementHistoryPanel({
                           )}
                           {m.retailQuantityAfter != null && (
                             <span>
-                              {Number(m.retailQuantityAfter).toFixed(2)}{' '}
+                              {formatNumber(Number(m.retailQuantityAfter))}{' '}
                               {t('movements.retailSuffix')}
                             </span>
                           )}
