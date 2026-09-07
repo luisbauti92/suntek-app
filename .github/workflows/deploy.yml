@@ -5,24 +5,50 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-push:
+  detect-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      catalog: ${{ steps.filter.outputs.catalog }}
+      pos: ${{ steps.filter.outputs.pos }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            catalog:
+              - 'catalog-web/**'
+            pos:
+              - 'pos-pwa/**'
+
+  build-and-deploy:
+    needs: detect-changes
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Log in to GHCR
+        if: ${{ needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.catalog == 'true' || needs.detect-changes.outputs.pos == 'true' }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 1. Build Backend
+      # 1. Backend API
       - name: Build and push API
+        if: ${{ needs.detect-changes.outputs.backend == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -30,8 +56,17 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/suntek-app-api:latest
 
-      # 2. Build Admin Frontend (El que ya tenías)
+      - name: Deploy API to Dokploy
+        if: ${{ needs.detect-changes.outputs.backend == 'true' }}
+        run: |
+          if [ -n "${{ secrets.DOKPLOY_WEBHOOK_API }}" ]; then
+            echo "Notificando a Dokploy (API)..."
+            curl -f -X POST "${{ secrets.DOKPLOY_WEBHOOK_API }}" || true
+          fi
+
+      # 2. Admin Frontend
       - name: Build and push Admin Frontend
+        if: ${{ needs.detect-changes.outputs.frontend == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
@@ -41,8 +76,17 @@ jobs:
           build-args: |
             VITE_API_URL=/api
 
-      # 3. Build Catalog Web (El nuevo búnker de ventas)
+      - name: Deploy Admin Frontend to Dokploy
+        if: ${{ needs.detect-changes.outputs.frontend == 'true' }}
+        run: |
+          if [ -n "${{ secrets.DOKPLOY_WEBHOOK_ADMIN }}" ]; then
+            echo "Notificando a Dokploy (Admin Frontend)..."
+            curl -f -X POST "${{ secrets.DOKPLOY_WEBHOOK_ADMIN }}" || true
+          fi
+
+      # 3. Catalog Web
       - name: Build and push Catalog Web
+        if: ${{ needs.detect-changes.outputs.catalog == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: ./catalog-web
@@ -52,8 +96,17 @@ jobs:
           build-args: |
             VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
 
-      # 4. Build POS PWA (Punto de Venta Móvil)
+      - name: Deploy Catalog to Dokploy
+        if: ${{ needs.detect-changes.outputs.catalog == 'true' }}
+        run: |
+          if [ -n "${{ secrets.DOKPLOY_WEBHOOK_CATALOG }}" ]; then
+            echo "Notificando a Dokploy (Catalog)..."
+            curl -f -X POST "${{ secrets.DOKPLOY_WEBHOOK_CATALOG }}" || true
+          fi
+
+      # 4. POS PWA (Punto de Venta Móvil)
       - name: Build and push POS PWA
+        if: ${{ needs.detect-changes.outputs.pos == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: ./pos-pwa
@@ -61,13 +114,10 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/suntek-app-pos:latest
 
-      # 5. Trigger Deployment in Dokploy
-      - name: Deploy to Dokploy
+      - name: Deploy POS PWA to Dokploy
+        if: ${{ needs.detect-changes.outputs.pos == 'true' }}
         run: |
-          echo "Despertando a los servicios en Dokploy..."
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_API }}"
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_ADMIN }}"
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_CATALOG }}"
           if [ -n "${{ secrets.DOKPLOY_WEBHOOK_POS }}" ]; then
-            curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_POS }}"
+            echo "Notificando a Dokploy (POS PWA)..."
+            curl -f -X POST "${{ secrets.DOKPLOY_WEBHOOK_POS }}" || true
           fi
