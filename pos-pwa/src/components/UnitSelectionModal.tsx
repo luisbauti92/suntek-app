@@ -96,7 +96,7 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-[32px] p-5 shadow-2xl text-white max-h-[85vh] flex flex-col space-y-4">
+      <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-[32px] p-5 pb-safe-sheet shadow-2xl text-white max-h-[85vh] flex flex-col space-y-4">
         {/* Handle bar */}
         <div className="w-12 h-1 bg-zinc-700 rounded-full mx-auto -mt-2"></div>
 
