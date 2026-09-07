@@ -148,7 +148,7 @@ export function App() {
       )}
 
       {/* App Header */}
-      <header className="bg-zinc-900 border-b border-zinc-800 pt-3 pb-3 px-4 flex items-center justify-between shrink-0">
+      <header className="bg-zinc-900 border-b border-zinc-800 pt-safe pb-3 px-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center font-black text-xs tracking-wider shadow-md shadow-violet-600/30">
             ST
@@ -283,7 +283,7 @@ export function App() {
           </div>
 
           {/* Floating Cart CTA */}
-          <div className="p-3 bg-zinc-900 border-t border-zinc-800 shrink-0">
+          <div className="p-3 pb-safe bg-zinc-900 border-t border-zinc-800 shrink-0">
             <button
               type="button"
               onClick={() => {
