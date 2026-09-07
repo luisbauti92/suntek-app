@@ -28,3 +28,15 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #71717a;
 }
+
+/* iOS Safe Area Insets for standalone PWA */
+.pt-safe {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+}
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+}
+.pb-safe-sheet {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+}
+
