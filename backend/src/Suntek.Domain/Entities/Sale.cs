@@ -12,5 +12,11 @@ public class Sale
     public decimal TotalPrice { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    public string? ClientName { get; set; }
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+    public decimal? CashAmount { get; set; }
+    public decimal? QrAmount { get; set; }
+    public string? TicketCode { get; set; }
+
     public Product Product { get; set; } = null!;
 }
