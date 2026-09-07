@@ -1,12 +1,20 @@
 # .NET
 bin/
 obj/
+**/bin/
+**/obj/
 *.user
 *.userosscache
 *.sln.docstates
 .vs/
 .idea/
 .user/
+.nuget/
+**/.nuget/
+nuget.config
+Library/
+.dotnet_temp/
+.wrangler/
 
 # Node / Frontend
 node_modules/
@@ -24,3 +32,4 @@ dist-ssr/
 .rider/
 .cursorrules
 .cursorrules.save
+PROJECT_CONTEXT.md

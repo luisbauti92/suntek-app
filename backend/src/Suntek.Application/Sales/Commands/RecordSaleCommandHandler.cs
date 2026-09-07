@@ -45,15 +45,22 @@ public class RecordSaleCommandHandler(
             SaleType = request.SaleType,
             UnitPrice = unitPrice,
             TotalPrice = totalPrice,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            ClientName = request.ClientName,
+            PaymentMethod = request.PaymentMethod,
+            CashAmount = request.CashAmount,
+            QrAmount = request.QrAmount,
+            TicketCode = request.TicketCode
         };
         var savedSale = await saleRepository.AddAsync(sale, ct);
         await productRepository.UpdateAsync(product, ct);
 
         var quantityUnit = request.SaleType == SaleType.Wholesale ? "Boxes" : (product.UnitType == UnitType.Meters ? "Meters" : "Units");
+        var clientNote = string.IsNullOrWhiteSpace(request.ClientName) ? "" : $" (Cliente: {request.ClientName.Trim()})";
+        var payNote = request.PaymentMethod == PaymentMethod.QrBcp ? " [QR BCP]" : (request.PaymentMethod == PaymentMethod.Mixed ? " [Mixto]" : " [Efectivo]");
         var description = request.SaleType == SaleType.Wholesale
-            ? $"Wholesale sale: {request.Quantity} box(es)"
-            : $"Retail sale: {request.Quantity} {quantityUnit.ToLowerInvariant()}";
+            ? $"Wholesale sale: {request.Quantity} box(es){clientNote}{payNote}"
+            : $"Retail sale: {request.Quantity} {quantityUnit.ToLowerInvariant()}{clientNote}{payNote}";
         var movement = new InventoryMovement
         {
             MovementType = MovementType.Sale,

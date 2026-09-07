@@ -1,0 +1,43 @@
+server {
+    listen 80;
+
+    # El DNS interno de Docker para resolver nombres de contenedores
+    resolver 127.0.0.11 valid=30s;
+
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    # Service Worker & Manifest: Never cache to guarantee instant PWA updates
+    location ~* (sw\.js|registerSW\.js|manifest\.webmanifest)$ {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        expires 0;
+        try_files $uri =404;
+    }
+
+    # Static assets with strong caching
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|svg|woff2?|eot|ttf)$ {
+        expires 1y;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy Inverso para la API .NET
+    location /api/ {
+        proxy_pass http://${BACKEND_HOST}:8080;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

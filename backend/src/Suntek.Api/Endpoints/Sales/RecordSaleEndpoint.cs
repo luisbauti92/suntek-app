@@ -11,6 +11,10 @@ public class RecordSaleRequest
     public decimal Quantity { get; set; }
     public SaleType SaleType { get; set; }
     public decimal UnitPrice { get; set; }
+    public string? ClientName { get; set; }
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+    public decimal? CashAmount { get; set; }
+    public decimal? QrAmount { get; set; }
 }
 
 public class RecordSaleResponse
@@ -33,7 +37,14 @@ public class RecordSaleEndpoint(IMediator mediator) : Endpoint<RecordSaleRequest
     public override async Task HandleAsync(RecordSaleRequest req, CancellationToken ct)
     {
         var result = await mediator.Send(new RecordSaleCommand(
-            req.ProductId, req.Quantity, req.SaleType, req.UnitPrice), ct);
+            req.ProductId,
+            req.Quantity,
+            req.SaleType,
+            req.UnitPrice,
+            req.ClientName,
+            req.PaymentMethod,
+            req.CashAmount,
+            req.QrAmount), ct);
         if (!result.Success)
         {
             Response = new RecordSaleResponse { Success = false, ErrorMessage = result.ErrorMessage };

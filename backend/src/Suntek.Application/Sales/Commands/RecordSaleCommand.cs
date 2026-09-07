@@ -8,6 +8,11 @@ public record RecordSaleCommand(
     int ProductId,
     decimal Quantity,
     SaleType SaleType,
-    decimal UnitPrice) : IRequest<RecordSaleResult>;
+    decimal UnitPrice,
+    string? ClientName = null,
+    PaymentMethod PaymentMethod = PaymentMethod.Cash,
+    decimal? CashAmount = null,
+    decimal? QrAmount = null,
+    string? TicketCode = null) : IRequest<RecordSaleResult>;
 
 public record RecordSaleResult(bool Success, string? ErrorMessage, ProductDto? Product);
