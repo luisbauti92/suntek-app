@@ -19,6 +19,7 @@ export function App() {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'Polarizados' | 'Vinilos' | 'Accesorios'>('all');
 
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartPulsing, setCartPulsing] = useState(false);
   const [activeProductForModal, setActiveProductForModal] = useState<ProductDto | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -78,6 +79,8 @@ export function App() {
 
   function handleAddToCart(item: CartItem) {
     setCart((prev) => [...prev, item]);
+    setCartPulsing(true);
+    setTimeout(() => setCartPulsing(false), 350);
     showToast(`+ Añadido al ticket`);
   }
 
@@ -283,7 +286,7 @@ export function App() {
             )}
           </div>
 
-          {/* Floating Cart CTA */}
+          {/* Floating Cart CTA with Tactile Materiality */}
           <div className="p-3 pb-safe bg-zinc-900/95 border-t border-zinc-800 shrink-0">
             <button
               type="button"
@@ -294,10 +297,16 @@ export function App() {
                   setIsCartOpen(true);
                 }
               }}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white min-h-[50px] py-3 px-4 rounded-2xl flex items-center justify-between shadow-xl shadow-emerald-950/40 transition font-bold"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white min-h-[52px] py-3 px-4 rounded-2xl flex items-center justify-between border-t border-white/20 border-x border-b border-emerald-700 shadow-[0_6px_20px_rgba(5,150,105,0.35)] transition-all font-bold"
             >
               <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-xs font-black">
+                <span
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 ${
+                    cartPulsing
+                      ? 'scale-125 bg-white text-emerald-900 shadow-lg shadow-white/50'
+                      : 'bg-white/25 text-white'
+                  }`}
+                >
                   {cart.length}
                 </span>
                 <span className="text-xs tracking-wide uppercase">Ticket de Venta</span>

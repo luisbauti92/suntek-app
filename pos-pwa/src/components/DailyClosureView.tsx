@@ -61,40 +61,50 @@ export function DailyClosureView() {
         </div>
       )}
 
-      {/* Main KPI Card */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
+      {/* Main KPI Card (Thermal Receipt Style) */}
+      <div className="bg-gradient-to-b from-zinc-900 via-zinc-900 to-zinc-950 border border-zinc-800/90 rounded-3xl p-5 shadow-2xl space-y-4 relative">
         <div>
-          <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block">
-            Total Recaudado en Mostrador
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+              Total Recaudado en Mostrador
+            </span>
+            <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-full border border-zinc-700/50">
+              AUDIT ✓
+            </span>
+          </div>
           <div className="text-3xl font-black text-white mt-1 tabular-nums">
             {formatBs(data?.totalAmountBs || 0)}
           </div>
           <span className="text-xs text-zinc-400 mt-1 block font-medium">
-            {data?.salesCount || 0} transacciones registradas en el turno
+            {data?.salesCount || 0} ventas completadas hoy
           </span>
         </div>
 
-        {/* Breakdown Cash vs QR */}
-        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-800">
-          <div className="bg-zinc-800/90 p-3.5 rounded-2xl border border-zinc-700/70">
+        {/* Dashed line separator like a receipt */}
+        <div className="border-t border-dashed border-zinc-700/80 -mx-1"></div>
+
+        {/* Breakdown Cash (Cajón) vs QR (Banco) */}
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="bg-zinc-850/90 p-3.5 rounded-2xl border border-zinc-700/70 shadow-sm">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
               <Banknote className="w-4 h-4" />
-              <span>Efectivo</span>
+              <span>💵 En Cajón</span>
             </div>
-            <div className="text-base font-black text-white mt-1 tabular-nums">
+            <div className="text-base font-black text-white mt-1.5 tabular-nums">
               {formatBs(data?.totalCashBs || 0)}
             </div>
+            <span className="text-[10px] text-zinc-400 mt-0.5 block">Efectivo físico</span>
           </div>
 
-          <div className="bg-blue-950/40 p-3.5 rounded-2xl border border-blue-800/40">
+          <div className="bg-blue-950/40 p-3.5 rounded-2xl border border-blue-800/50 shadow-sm">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wide">
               <QrCode className="w-4 h-4" />
-              <span>QR BCP</span>
+              <span>📱 En Banco</span>
             </div>
-            <div className="text-base font-black text-white mt-1 tabular-nums">
+            <div className="text-base font-black text-white mt-1.5 tabular-nums">
               {formatBs(data?.totalQrBs || 0)}
             </div>
+            <span className="text-[10px] text-blue-300/70 mt-0.5 block">QR BCP directo</span>
           </div>
         </div>
       </div>

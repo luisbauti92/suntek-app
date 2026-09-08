@@ -276,7 +276,7 @@ export function CartCheckoutModal({
             type="button"
             disabled={loading || cart.length === 0 || isSplitUnbalanced}
             onClick={handleCheckout}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white min-h-[52px] py-3.5 rounded-2xl font-extrabold text-sm shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white min-h-[52px] py-3.5 rounded-2xl font-extrabold text-sm border-t border-white/25 border-x border-b border-emerald-700 shadow-[0_6px_24px_rgba(5,150,105,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
