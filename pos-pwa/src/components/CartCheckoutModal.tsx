@@ -50,8 +50,12 @@ export function CartCheckoutModal({
     setQrAmount(Number(remainder.toFixed(2)));
   }
 
+  const splitSum = Number((qrAmount + cashAmount).toFixed(2));
+  const splitDiff = Number((totalAmount - splitSum).toFixed(2));
+  const isSplitUnbalanced = paymentChoice === 'Mixed' && Math.abs(splitDiff) > 0.01;
+
   async function handleCheckout() {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || isSplitUnbalanced) return;
     setError(null);
     setLoading(true);
 
@@ -100,27 +104,28 @@ export function CartCheckoutModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-[32px] p-5 pb-safe-sheet shadow-2xl text-white max-h-[92vh] flex flex-col space-y-4">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/85 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="bg-zinc-900 border-t border-zinc-800 rounded-t-[32px] p-5 pb-safe-sheet shadow-2xl text-white max-h-[92vh] flex flex-col space-y-3.5">
         {/* Handle */}
         <div className="w-12 h-1 bg-zinc-700 rounded-full mx-auto -mt-2"></div>
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-2.5">
           <div>
-            <h2 className="text-base font-bold text-white">Ticket de Venta</h2>
-            <span className="text-xs text-zinc-400 font-medium">{cart.length} productos en ticket</span>
+            <h2 className="text-base font-bold text-white tracking-wide">Ticket de Cobro</h2>
+            <span className="text-xs text-zinc-300 font-medium">{cart.length} productos en lista</span>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center shrink-0"
+            className="w-9 h-9 rounded-full bg-zinc-800 text-zinc-300 hover:text-white active:scale-95 flex items-center justify-center shrink-0 border border-zinc-700/50"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-2 text-rose-400 text-xs">
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/40 flex items-start gap-2 text-rose-300 text-xs">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -128,7 +133,7 @@ export function CartCheckoutModal({
 
         {/* Client Name Input */}
         <div>
-          <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
+          <label className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block mb-1.5">
             Cliente (Alias o Nombre)
           </label>
           <input
@@ -136,7 +141,7 @@ export function CartCheckoutModal({
             value={clientName}
             onChange={(e) => setClientName(e.target.value)}
             placeholder="Ej. Sonia Velasquez, Rivero, Taller..."
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full bg-zinc-800/90 border border-zinc-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#0038a8] focus:border-[#0038a8] transition"
           />
         </div>
 
@@ -145,19 +150,19 @@ export function CartCheckoutModal({
           {cart.map((item) => (
             <div key={item.cartId} className="flex items-center justify-between pt-2 text-xs">
               <div className="flex-1 min-w-0 pr-2">
-                <div className="font-bold text-zinc-200 truncate">{item.productName}</div>
-                <div className="text-[10px] text-zinc-400 mt-0.5">
-                  {item.unitLabel} • {formatBs(item.unitPrice)}
+                <div className="font-bold text-zinc-100 truncate">{item.productName}</div>
+                <div className="text-[11px] text-zinc-400 mt-0.5">
+                  {item.unitLabel} • <span className="tabular-nums">{formatBs(item.unitPrice)}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="font-bold text-white tabular-nums">{formatBs(item.subtotal)}</span>
+              <div className="flex items-center gap-2.5 shrink-0">
+                <span className="font-black text-white tabular-nums text-sm">{formatBs(item.subtotal)}</span>
                 <button
                   type="button"
                   onClick={() => onRemoveItem(item.cartId)}
-                  className="w-7 h-7 rounded-lg bg-zinc-800 text-zinc-400 hover:text-rose-400 flex items-center justify-center transition"
+                  className="w-8 h-8 rounded-xl bg-zinc-800 text-zinc-400 hover:text-rose-400 active:scale-95 flex items-center justify-center transition border border-zinc-700/40"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -165,18 +170,18 @@ export function CartCheckoutModal({
         </div>
 
         {/* Payment Methods */}
-        <div className="space-y-2 pt-1 border-t border-zinc-800">
-          <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+        <div className="space-y-2 pt-2 border-t border-zinc-800">
+          <label className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block">
             Método de Cobro
           </label>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => setPaymentChoice('Cash')}
-              className={`p-2.5 rounded-xl font-bold text-xs border text-center transition ${
+              className={`min-h-[46px] p-2 rounded-xl font-bold text-xs border text-center transition-all active:scale-[0.97] ${
                 paymentChoice === 'Cash'
                   ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-600/20'
-                  : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750'
+                  : 'bg-zinc-800/90 border-zinc-700/60 text-zinc-300 hover:bg-zinc-750'
               }`}
             >
               💵 Efectivo
@@ -184,10 +189,10 @@ export function CartCheckoutModal({
             <button
               type="button"
               onClick={() => setPaymentChoice('QrBcp')}
-              className={`p-2.5 rounded-xl font-bold text-xs border text-center transition ${
+              className={`min-h-[46px] p-2 rounded-xl font-bold text-xs border text-center transition-all active:scale-[0.97] ${
                 paymentChoice === 'QrBcp'
-                  ? 'bg-violet-600/30 border-violet-500 text-violet-300 shadow-md shadow-violet-600/20'
-                  : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750'
+                  ? 'bg-[#0038a8]/40 border-blue-400 text-blue-200 shadow-md shadow-[#0038a8]/25'
+                  : 'bg-zinc-800/90 border-zinc-700/60 text-zinc-300 hover:bg-zinc-750'
               }`}
             >
               📱 QR BCP
@@ -195,10 +200,10 @@ export function CartCheckoutModal({
             <button
               type="button"
               onClick={() => setPaymentChoice('Mixed')}
-              className={`p-2.5 rounded-xl font-bold text-xs border text-center transition ${
+              className={`min-h-[46px] p-2 rounded-xl font-bold text-xs border text-center transition-all active:scale-[0.97] ${
                 paymentChoice === 'Mixed'
                   ? 'bg-amber-600/30 border-amber-500 text-amber-300 shadow-md shadow-amber-600/20'
-                  : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750'
+                  : 'bg-zinc-800/90 border-zinc-700/60 text-zinc-300 hover:bg-zinc-750'
               }`}
             >
               ⚖️ Mixto
@@ -207,30 +212,54 @@ export function CartCheckoutModal({
 
           {/* Split Inputs if Mixed */}
           {paymentChoice === 'Mixed' && (
-            <div className="bg-zinc-800/80 border border-zinc-700/80 rounded-2xl p-3 grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <label className="text-[10px] font-bold text-violet-400 uppercase block mb-1">
-                  📱 QR BCP (Bs)
-                </label>
-                <input
-                  type="number"
-                  step="1"
-                  value={qrAmount}
-                  onChange={(e) => handleQrChange(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-violet-500 font-bold"
-                />
+            <div className="bg-zinc-800/90 border border-zinc-700/80 rounded-2xl p-3 space-y-2 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold text-blue-300 uppercase block mb-1">
+                    📱 QR BCP (Bs)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={qrAmount}
+                    onChange={(e) => handleQrChange(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#0038a8] font-bold tabular-nums"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-emerald-400 uppercase block mb-1">
+                    💵 Efectivo (Bs)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={cashAmount}
+                    onChange={(e) => handleCashChange(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold tabular-nums"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-[10px] font-bold text-emerald-400 uppercase block mb-1">
-                  💵 Efectivo (Bs)
-                </label>
-                <input
-                  type="number"
-                  step="1"
-                  value={cashAmount}
-                  onChange={(e) => handleCashChange(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold"
-                />
+
+              {/* Live Balance Status Indicator */}
+              <div className="pt-1 flex items-center justify-between text-[11px] font-bold">
+                {isSplitUnbalanced ? (
+                  splitDiff > 0 ? (
+                    <span className="text-amber-400 flex items-center gap-1">
+                      ⚠️ Faltan {formatBs(splitDiff)} para cubrir el total
+                    </span>
+                  ) : (
+                    <span className="text-rose-400 flex items-center gap-1">
+                      ⚠️ El monto supera el total por {formatBs(Math.abs(splitDiff))}
+                    </span>
+                  )
+                ) : (
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    ✓ Monto cuadrado exactamente con el ticket
+                  </span>
+                )}
+                <span className="text-zinc-400 font-mono">
+                  Suma: {formatBs(splitSum)}
+                </span>
               </div>
             </div>
           )}
@@ -239,22 +268,22 @@ export function CartCheckoutModal({
         {/* Grand Total and CTA */}
         <div className="pt-2 border-t border-zinc-800">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total a Cobrar:</span>
-            <span className="text-xl font-black text-white">{formatBs(totalAmount)}</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">Total a Cobrar:</span>
+            <span className="text-2xl font-black text-white tabular-nums">{formatBs(totalAmount)}</span>
           </div>
 
           <button
             type="button"
-            disabled={loading || cart.length === 0}
+            disabled={loading || cart.length === 0 || isSplitUnbalanced}
             onClick={handleCheckout}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white min-h-[52px] py-3.5 rounded-2xl font-extrabold text-sm shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
-                <Check className="w-5 h-5" />
-                <span>CONFIRMAR VENTA ({formatBs(totalAmount)})</span>
+                <Check className="w-5 h-5 stroke-[2.5]" />
+                <span>CONFIRMAR COBRO ({formatBs(totalAmount)})</span>
               </>
             )}
           </button>

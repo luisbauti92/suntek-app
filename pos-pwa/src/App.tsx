@@ -148,32 +148,33 @@ export function App() {
       )}
 
       {/* App Header */}
-      <header className="bg-zinc-900 border-b border-zinc-800 pt-safe pb-3 px-4 flex items-center justify-between shrink-0">
+      <header className="bg-zinc-900 border-b border-zinc-800/90 pt-safe pb-3 px-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center font-black text-xs tracking-wider shadow-md shadow-violet-600/30">
+          <div className="w-9 h-9 rounded-xl bg-[#0038a8] border border-blue-400/30 flex items-center justify-center font-black text-xs tracking-wider text-white shadow-md shadow-[#0038a8]/30">
             ST
           </div>
           <div>
-            <div className="text-xs font-black tracking-wide text-white">
-              SUNTEK <span className="text-violet-400">POS</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-black tracking-wider text-white">SUNTEK</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-900/60 text-blue-200 border border-blue-700/60">POS</span>
             </div>
-            <div className="text-[10px] text-zinc-400 truncate max-w-[140px]">
+            <div className="text-[10px] text-zinc-300 truncate max-w-[140px] font-medium">
               {currentUser.email.split('@')[0]}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-800 text-[10px] text-zinc-300">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-800/90 border border-zinc-700/60 text-[10px] text-zinc-200">
             {isOnline ? (
               <>
-                <Wifi className="w-3 h-3 text-emerald-400" />
-                <span>Online</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-semibold text-emerald-300">En línea</span>
               </>
             ) : (
               <>
                 <WifiOff className="w-3 h-3 text-rose-400" />
-                <span className="text-rose-400">Offline</span>
+                <span className="font-semibold text-rose-400">Offline</span>
               </>
             )}
           </div>
@@ -181,7 +182,7 @@ export function App() {
           <button
             type="button"
             onClick={authApi.logout}
-            className="p-1.5 rounded-xl bg-zinc-800 text-zinc-400 hover:text-rose-400 transition"
+            className="w-8 h-8 rounded-xl bg-zinc-800/90 border border-zinc-700/60 text-zinc-400 hover:text-rose-400 active:scale-95 flex items-center justify-center transition"
             title="Cerrar Sesión"
           >
             <LogOut className="w-4 h-4" />
@@ -189,15 +190,15 @@ export function App() {
         </div>
       </header>
 
-      {/* Tabs */}
-      <nav className="bg-zinc-900/90 px-3 py-1.5 flex gap-1 border-b border-zinc-800/80 shrink-0 text-xs">
+      {/* Segmented Control Tabs */}
+      <nav className="bg-zinc-900/95 px-3 py-1.5 flex gap-1.5 border-b border-zinc-800/90 shrink-0 text-xs">
         <button
           type="button"
           onClick={() => setActiveTab('sales')}
-          className={`flex-1 py-2 font-bold rounded-xl transition text-center ${
+          className={`flex-1 py-2.5 font-bold rounded-xl transition text-center active:scale-[0.98] ${
             activeTab === 'sales'
-              ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/25'
-              : 'text-zinc-400 hover:text-white'
+              ? 'bg-[#0038a8] text-white shadow-md shadow-[#0038a8]/35'
+              : 'text-zinc-400 hover:text-zinc-200 active:bg-zinc-800'
           }`}
         >
           🛒 Nueva Venta
@@ -206,10 +207,10 @@ export function App() {
         <button
           type="button"
           onClick={() => setActiveTab('closure')}
-          className={`flex-1 py-2 font-bold rounded-xl transition text-center ${
+          className={`flex-1 py-2.5 font-bold rounded-xl transition text-center active:scale-[0.98] ${
             activeTab === 'closure'
-              ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/25'
-              : 'text-zinc-400 hover:text-white'
+              ? 'bg-[#0038a8] text-white shadow-md shadow-[#0038a8]/35'
+              : 'text-zinc-400 hover:text-zinc-200 active:bg-zinc-800'
           }`}
         >
           📊 Arqueo de Hoy
@@ -220,38 +221,38 @@ export function App() {
       {activeTab === 'sales' && (
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Search & Category Pills */}
-          <div className="p-3 bg-zinc-900 border-b border-zinc-800 shrink-0 space-y-2">
+          <div className="p-3 bg-zinc-900/90 border-b border-zinc-800/80 shrink-0 space-y-2.5">
             <div className="relative">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar vinil, polarizado, SKU..."
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-2 pl-9 pr-8 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-full bg-zinc-800/90 border border-zinc-700/80 rounded-xl py-2.5 pl-9 pr-9 text-xs text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#0038a8] focus:border-[#0038a8] transition"
               />
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
+              <Search className="w-4 h-4 absolute left-3 top-3 text-zinc-400" />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-white"
+                  className="w-6 h-6 absolute right-2 top-2 rounded-lg bg-zinc-700/60 text-zinc-300 hover:text-white flex items-center justify-center transition"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
 
             {/* Category pills */}
-            <div className="flex gap-1.5 overflow-x-auto pb-0.5 text-[11px] no-scrollbar">
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5 text-xs no-scrollbar">
               {(['all', 'Polarizados', 'Vinilos', 'Accesorios'] as const).map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1 rounded-full font-bold shrink-0 transition ${
+                  className={`px-3.5 py-1.5 rounded-full font-bold shrink-0 transition active:scale-95 ${
                     selectedCategory === cat
-                      ? 'bg-white text-zinc-950 shadow'
-                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-750'
+                      ? 'bg-white text-zinc-950 shadow-sm'
+                      : 'bg-zinc-800/90 border border-zinc-700/50 text-zinc-300 hover:bg-zinc-700 hover:text-white'
                   }`}
                 >
                   {cat === 'all' ? 'Todos' : cat}
@@ -261,15 +262,15 @@ export function App() {
           </div>
 
           {/* Product Cards List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
             {loading ? (
-              <div className="py-16 flex flex-col items-center justify-center text-zinc-500 gap-2">
-                <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
-                <span className="text-xs">Cargando inventario...</span>
+              <div className="py-20 flex flex-col items-center justify-center text-zinc-400 gap-2.5">
+                <Loader2 className="w-7 h-7 animate-spin text-[#0038a8]" />
+                <span className="text-xs font-semibold">Cargando catálogo...</span>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-16 text-zinc-500 text-xs">
-                No se encontraron productos coincidentes.
+              <div className="text-center py-20 text-zinc-400 text-xs px-4">
+                No se encontraron productos coincidentes con tu búsqueda.
               </div>
             ) : (
               filteredProducts.map((product) => (
@@ -283,7 +284,7 @@ export function App() {
           </div>
 
           {/* Floating Cart CTA */}
-          <div className="p-3 pb-safe bg-zinc-900 border-t border-zinc-800 shrink-0">
+          <div className="p-3 pb-safe bg-zinc-900/95 border-t border-zinc-800 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -293,17 +294,17 @@ export function App() {
                   setIsCartOpen(true);
                 }
               }}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white py-3.5 px-4 rounded-2xl flex items-center justify-between shadow-xl shadow-emerald-600/25 transition font-bold"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white min-h-[50px] py-3 px-4 rounded-2xl flex items-center justify-between shadow-xl shadow-emerald-950/40 transition font-bold"
             >
               <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-black">
+                <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-xs font-black">
                   {cart.length}
                 </span>
-                <span className="text-xs tracking-wide">Ticket de Venta</span>
+                <span className="text-xs tracking-wide uppercase">Ticket de Venta</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-black tabular-nums">{formatBs(cartTotal)}</span>
-                <ShoppingBag className="w-4 h-4 opacity-80" />
+                <ShoppingBag className="w-4 h-4 opacity-90" />
               </div>
             </button>
           </div>

@@ -40,23 +40,23 @@ export function DailyClosureView() {
       {/* Top Banner & Refresh */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-violet-400" />
-          <span className="text-xs font-bold text-zinc-300">
-            Arqueo de Hoy • {data?.date || 'Hoy'}
+          <Calendar className="w-4 h-4 text-blue-400" />
+          <span className="text-xs font-bold text-zinc-200">
+            Arqueo de Turno • {data?.date || 'Hoy'}
           </span>
         </div>
         <button
           type="button"
           onClick={fetchClosure}
           disabled={loading}
-          className="p-2 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white transition active:scale-95 disabled:opacity-50"
+          className="p-2.5 rounded-xl bg-zinc-800/90 border border-zinc-700/60 text-zinc-300 hover:text-white transition active:scale-95 disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       {error && (
-        <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+        <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/40 text-rose-300 text-xs">
           {error}
         </div>
       )}
@@ -64,35 +64,35 @@ export function DailyClosureView() {
       {/* Main KPI Card */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
         <div>
-          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+          <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block">
             Total Recaudado en Mostrador
           </span>
-          <div className="text-3xl font-black text-white mt-1">
+          <div className="text-3xl font-black text-white mt-1 tabular-nums">
             {formatBs(data?.totalAmountBs || 0)}
           </div>
-          <span className="text-[11px] text-zinc-500 mt-1 block">
-            {data?.salesCount || 0} transacciones registradas hoy
+          <span className="text-xs text-zinc-400 mt-1 block font-medium">
+            {data?.salesCount || 0} transacciones registradas en el turno
           </span>
         </div>
 
         {/* Breakdown Cash vs QR */}
         <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-800">
-          <div className="bg-zinc-800/80 p-3 rounded-2xl border border-zinc-700/60">
+          <div className="bg-zinc-800/90 p-3.5 rounded-2xl border border-zinc-700/70">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
-              <Banknote className="w-3.5 h-3.5" />
+              <Banknote className="w-4 h-4" />
               <span>Efectivo</span>
             </div>
-            <div className="text-base font-black text-white mt-1">
+            <div className="text-base font-black text-white mt-1 tabular-nums">
               {formatBs(data?.totalCashBs || 0)}
             </div>
           </div>
 
-          <div className="bg-violet-950/40 p-3 rounded-2xl border border-violet-800/40">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-violet-400 uppercase tracking-wide">
-              <QrCode className="w-3.5 h-3.5" />
+          <div className="bg-blue-950/40 p-3.5 rounded-2xl border border-blue-800/40">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-wide">
+              <QrCode className="w-4 h-4" />
               <span>QR BCP</span>
             </div>
-            <div className="text-base font-black text-white mt-1">
+            <div className="text-base font-black text-white mt-1 tabular-nums">
               {formatBs(data?.totalQrBs || 0)}
             </div>
           </div>
@@ -101,17 +101,17 @@ export function DailyClosureView() {
 
       {/* Itemized list of sales */}
       <div className="space-y-2">
-        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-1">
-          Historial del Turno
+        <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider px-1">
+          Historial de Ventas
         </h3>
 
         {loading ? (
-          <div className="py-12 flex flex-col items-center justify-center text-zinc-500 gap-2">
-            <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
-            <span className="text-xs">Cargando ventas...</span>
+          <div className="py-14 flex flex-col items-center justify-center text-zinc-400 gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-[#0038a8]" />
+            <span className="text-xs font-semibold">Consultando arqueo...</span>
           </div>
         ) : !data || data.sales.length === 0 ? (
-          <div className="bg-zinc-900/60 border border-dashed border-zinc-800 rounded-2xl p-8 text-center text-zinc-500 text-xs">
+          <div className="bg-zinc-900/60 border border-dashed border-zinc-800 rounded-2xl p-8 text-center text-zinc-400 text-xs">
             <ReceiptText className="w-8 h-8 mx-auto mb-2 opacity-50 text-zinc-400" />
             <span>Aún no hay ventas registradas en este turno.</span>
           </div>
@@ -120,31 +120,31 @@ export function DailyClosureView() {
             {data.sales.map((sale) => (
               <div
                 key={sale.id}
-                className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-3.5 flex items-center justify-between text-xs"
+                className="bg-zinc-900 border border-zinc-800/90 rounded-2xl p-3.5 flex items-center justify-between text-xs hover:border-zinc-700 transition"
               >
                 <div className="flex-1 min-w-0 pr-3">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-white truncate">
                       {sale.clientName || 'Cliente Mostrador'}
                     </span>
-                    <span className="text-[10px] text-zinc-500 shrink-0">
+                    <span className="text-[10px] text-zinc-400 shrink-0 font-medium">
                       {formatTime(sale.createdAt)}
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-zinc-400 mt-0.5 truncate">
+                  <div className="text-[11px] text-zinc-300 mt-0.5 truncate">
                     {sale.productName} ({formatNumber(sale.quantity)}{' '}
                     {sale.saleType === 0 ? 'caj' : 'm/un'})
                   </div>
 
-                  <div className="mt-1.5 flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2">
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                         sale.paymentMethod === 1
-                          ? 'bg-violet-900/50 text-violet-300 border border-violet-800/50'
+                          ? 'bg-[#0038a8]/30 text-blue-200 border border-blue-500/40'
                           : sale.paymentMethod === 2
-                          ? 'bg-amber-900/50 text-amber-300 border border-amber-800/50'
-                          : 'bg-emerald-900/50 text-emerald-300 border border-emerald-800/50'
+                          ? 'bg-amber-950/50 text-amber-300 border border-amber-700/50'
+                          : 'bg-emerald-950/50 text-emerald-300 border border-emerald-700/50'
                       }`}
                     >
                       {sale.paymentMethod === 1
@@ -154,7 +154,7 @@ export function DailyClosureView() {
                         : '💵 Efectivo'}
                     </span>
                     {sale.ticketCode && (
-                      <span className="text-[10px] text-zinc-500 font-mono">
+                      <span className="text-[10px] text-zinc-400 font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700/50">
                         {sale.ticketCode}
                       </span>
                     )}
@@ -162,10 +162,10 @@ export function DailyClosureView() {
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="font-black text-sm text-white">
+                  <div className="font-black text-sm text-white tabular-nums">
                     {formatBs(sale.totalPrice)}
                   </div>
-                  <div className="text-[10px] text-zinc-500 mt-0.5">
+                  <div className="text-[11px] text-zinc-400 mt-0.5 tabular-nums">
                     {formatBs(sale.unitPrice)} / un
                   </div>
                 </div>
