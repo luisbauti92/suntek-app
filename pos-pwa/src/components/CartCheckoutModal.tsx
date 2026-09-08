@@ -27,8 +27,11 @@ export function CartCheckoutModal({
   const [paymentChoice, setPaymentChoice] = useState<PaymentChoice>('QrBcp');
   const [qrAmount, setQrAmount] = useState<number>(0);
   const [cashAmount, setCashAmount] = useState<number>(0);
+  const [receivedCash, setReceivedCash] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const targetCash = paymentChoice === 'Mixed' ? cashAmount : paymentChoice === 'Cash' ? totalAmount : 0;
 
   useEffect(() => {
     if (paymentChoice === 'Mixed') {
@@ -37,6 +40,12 @@ export function CartCheckoutModal({
       setCashAmount(Number((totalAmount - half).toFixed(2)));
     }
   }, [paymentChoice, totalAmount]);
+
+  useEffect(() => {
+    if (targetCash > 0) {
+      setReceivedCash(targetCash);
+    }
+  }, [targetCash]);
 
   function handleQrChange(val: number) {
     setQrAmount(val);
@@ -53,6 +62,7 @@ export function CartCheckoutModal({
   const splitSum = Number((qrAmount + cashAmount).toFixed(2));
   const splitDiff = Number((totalAmount - splitSum).toFixed(2));
   const isSplitUnbalanced = paymentChoice === 'Mixed' && Math.abs(splitDiff) > 0.01;
+  const cashChange = Number(Math.max(0, receivedCash - targetCash).toFixed(2));
 
   async function handleCheckout() {
     if (cart.length === 0 || isSplitUnbalanced) return;
@@ -260,6 +270,78 @@ export function CartCheckoutModal({
                 <span className="text-zinc-400 font-mono">
                   Suma: {formatBs(splitSum)}
                 </span>
+              </div>
+            </div>
+          )}
+
+          {/* Cash Change Calculator (When Cash or Mixed with Cash is selected) */}
+          {targetCash > 0 && (
+            <div className="bg-zinc-850/90 border border-zinc-700/80 rounded-2xl p-3 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-wide">
+                  💵 Efectivo Recibido & Cambio
+                </span>
+                <span className="text-[10px] text-zinc-400">
+                  A cobrar: <strong className="text-white tabular-nums">{formatBs(targetCash)}</strong>
+                </span>
+              </div>
+
+              {/* Fast Banknote Chips */}
+              <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+                <button
+                  type="button"
+                  onClick={() => setReceivedCash(targetCash)}
+                  className={`px-3 py-1.5 rounded-xl font-bold text-xs shrink-0 border transition-all active:scale-95 ${
+                    receivedCash === targetCash
+                      ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
+                      : 'bg-zinc-800 border-zinc-700/70 text-zinc-300 hover:bg-zinc-750'
+                  }`}
+                >
+                  Exacto
+                </button>
+                {[20, 50, 100, 200]
+                  .filter((b) => b >= targetCash || (targetCash > 100 && b === 200))
+                  .map((bill) => (
+                    <button
+                      key={bill}
+                      type="button"
+                      onClick={() => setReceivedCash(bill)}
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs shrink-0 border transition-all active:scale-95 ${
+                        receivedCash === bill
+                          ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
+                          : 'bg-zinc-800 border-zinc-700/70 text-zinc-300 hover:bg-zinc-750'
+                      }`}
+                    >
+                      Bs {bill}
+                    </button>
+                  ))}
+              </div>
+
+              {/* Custom Received Amount Input & Change Readout */}
+              <div className="flex items-center justify-between gap-3 pt-1 border-t border-zinc-750">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-zinc-400 font-medium">Recibe: Bs</span>
+                  <input
+                    type="number"
+                    step="1"
+                    value={receivedCash || ''}
+                    onChange={(e) => setReceivedCash(parseFloat(e.target.value) || 0)}
+                    className="w-20 bg-zinc-900 border border-zinc-700 rounded-xl px-2 py-1 text-xs text-white font-black tabular-nums focus:outline-none focus:ring-1 focus:ring-emerald-500 text-center"
+                  />
+                </div>
+
+                <div className="text-right">
+                  {receivedCash >= targetCash ? (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 shadow-sm">
+                      <span className="text-[10px] font-bold uppercase">Cambio:</span>
+                      <span className="text-sm font-black tabular-nums">{formatBs(cashChange)}</span>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] font-bold text-amber-400">
+                      Faltan {formatBs(targetCash - receivedCash)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}

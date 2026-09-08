@@ -3,11 +3,13 @@ import { Search, ShoppingBag, X, LogOut, Wifi, WifiOff, Loader2 } from 'lucide-r
 import type { ProductDto, CartItem, AuthUser, BatchSaleResponse } from './types';
 import { inventoryApi, authApi } from './api/client';
 import { ProductCard } from './components/ProductCard';
+import { ProductCardSkeleton } from './components/ProductCardSkeleton';
 import { UnitSelectionModal } from './components/UnitSelectionModal';
 import { CartCheckoutModal } from './components/CartCheckoutModal';
 import { DailyClosureView } from './components/DailyClosureView';
 import { LoginModal } from './components/LoginModal';
 import { formatBs } from './utils/formatBs';
+import { haptics } from './utils/haptics';
 
 export function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => authApi.getCurrentUser());
@@ -81,14 +83,17 @@ export function App() {
     setCart((prev) => [...prev, item]);
     setCartPulsing(true);
     setTimeout(() => setCartPulsing(false), 350);
+    haptics.tap();
     showToast(`+ Añadido al ticket`);
   }
 
   function handleRemoveItem(cartId: string) {
     setCart((prev) => prev.filter((i) => i.cartId !== cartId));
+    haptics.tap();
   }
 
   function handleSaleCompleted(res: BatchSaleResponse) {
+    haptics.success();
     showToast(`✓ Ticket ${res.ticketCode || ''} registrado con éxito (${formatBs(res.totalAmount)})`);
     loadProducts();
   }
@@ -267,9 +272,11 @@ export function App() {
           {/* Product Cards List */}
           <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
             {loading ? (
-              <div className="py-20 flex flex-col items-center justify-center text-zinc-400 gap-2.5">
-                <Loader2 className="w-7 h-7 animate-spin text-[#0038a8]" />
-                <span className="text-xs font-semibold">Cargando catálogo...</span>
+              <div className="space-y-2.5">
+                <ProductCardSkeleton />
+                <ProductCardSkeleton />
+                <ProductCardSkeleton />
+                <ProductCardSkeleton />
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-20 text-zinc-400 text-xs px-4">
