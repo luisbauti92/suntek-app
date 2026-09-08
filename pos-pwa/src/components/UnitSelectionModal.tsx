@@ -104,18 +104,25 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
         <div className="flex items-start justify-between">
           <div className="pr-4">
             <h2 className="text-base font-bold text-white leading-snug">{product.name}</h2>
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-zinc-400">
-              <span className="font-mono">{product.sku}</span>
-              <span>•</span>
+            <div className="flex items-center gap-2 mt-1 text-xs text-zinc-300">
+              <span className="font-mono bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700/50 text-[10px]">
+                {product.sku}
+              </span>
+              <span className="text-zinc-500">•</span>
               <span>
-                Almacén: {product.wholesaleQuantity} caj | Vitrina: {formatNumber(product.retailQuantity)}{' '}
+                Almacén: <strong className="text-white">{product.wholesaleQuantity}</strong> caj
+              </span>
+              <span className="text-zinc-500">•</span>
+              <span>
+                Vitrina: <strong className="text-white">{formatNumber(product.retailQuantity)}</strong>{' '}
                 {isMeters ? 'm' : 'un'}
               </span>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center shrink-0"
+            className="w-9 h-9 rounded-full bg-zinc-800 text-zinc-300 hover:text-white active:scale-95 flex items-center justify-center shrink-0 border border-zinc-700/50"
           >
             <X className="w-4 h-4" />
           </button>
@@ -123,30 +130,30 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
 
         {/* Unit Selector Tabs */}
         <div>
-          <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">
+          <label className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block mb-2">
             Tipo de Venta
           </label>
           {isAccessory ? (
-            <div className="p-2.5 rounded-xl bg-violet-600 text-white font-bold text-xs flex items-center justify-between">
-              <span>🏷️ Por Unidad</span>
-              <span>{formatBs(unitPrice)}</span>
+            <div className="p-3.5 rounded-2xl bg-[#0038a8] text-white font-bold text-xs flex items-center justify-between shadow-md shadow-[#0038a8]/25 border border-blue-400/30">
+              <span className="text-sm font-extrabold">🏷️ Por Unidad</span>
+              <span className="text-sm font-black tabular-nums">{formatBs(unitPrice)}</span>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
               <button
                 type="button"
                 onClick={() => {
                   setMode('meter');
                   setQuantity(1);
                 }}
-                className={`p-2.5 rounded-2xl font-bold text-xs text-center border transition flex flex-col items-center gap-0.5 ${
+                className={`min-h-[56px] p-2.5 rounded-2xl font-bold text-xs text-center border transition-all active:scale-[0.97] flex flex-col items-center justify-center gap-0.5 ${
                   mode === 'meter'
-                    ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/30'
-                    : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-750'
+                    ? 'bg-[#0038a8] border-blue-400/40 text-white shadow-lg shadow-[#0038a8]/35'
+                    : 'bg-zinc-800/90 border-zinc-700/60 text-zinc-300 hover:bg-zinc-750'
                 }`}
               >
-                <span>📏 Metro</span>
-                <span className="text-[10px] opacity-90 font-normal">{formatBs(product.pricePerMeter)}</span>
+                <span className="font-extrabold">📏 Metro</span>
+                <span className="text-[11px] opacity-90 font-medium tabular-nums">{formatBs(product.pricePerMeter)}</span>
               </button>
 
               <button
@@ -155,14 +162,14 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
                   setMode('roll');
                   setQuantity(1);
                 }}
-                className={`p-2.5 rounded-2xl font-bold text-xs text-center border transition flex flex-col items-center gap-0.5 ${
+                className={`min-h-[56px] p-2.5 rounded-2xl font-bold text-xs text-center border transition-all active:scale-[0.97] flex flex-col items-center justify-center gap-0.5 ${
                   mode === 'roll'
-                    ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/30'
-                    : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-750'
+                    ? 'bg-[#0038a8] border-blue-400/40 text-white shadow-lg shadow-[#0038a8]/35'
+                    : 'bg-zinc-800/90 border-zinc-700/60 text-zinc-300 hover:bg-zinc-750'
                 }`}
               >
-                <span>📜 Rollo</span>
-                <span className="text-[10px] opacity-90 font-normal">{formatBs(product.pricePerRoll)}</span>
+                <span className="font-extrabold">📜 Rollo</span>
+                <span className="text-[11px] opacity-90 font-medium tabular-nums">{formatBs(product.pricePerRoll)}</span>
               </button>
 
               <button
@@ -171,14 +178,14 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
                   setMode('box');
                   setQuantity(1);
                 }}
-                className={`p-2.5 rounded-2xl font-bold text-xs text-center border transition flex flex-col items-center gap-0.5 ${
+                className={`min-h-[56px] p-2.5 rounded-2xl font-bold text-xs text-center border transition-all active:scale-[0.97] flex flex-col items-center justify-center gap-0.5 ${
                   mode === 'box'
-                    ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-600/30'
-                    : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-750'
+                    ? 'bg-[#0038a8] border-blue-400/40 text-white shadow-lg shadow-[#0038a8]/35'
+                    : 'bg-zinc-800/90 border-zinc-700/60 text-zinc-300 hover:bg-zinc-750'
                 }`}
               >
-                <span>📦 Caja ({product.rollsPerBox} rol)</span>
-                <span className="text-[10px] opacity-90 font-normal">
+                <span className="font-extrabold">📦 Caja</span>
+                <span className="text-[10px] opacity-90 font-medium tabular-nums">
                   {formatBs(product.pricePerRoll * (product.rollsPerBox || 1))}
                 </span>
               </button>
@@ -188,19 +195,19 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
 
         {/* Quick Quantity Chips */}
         <div>
-          <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">
+          <label className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block mb-2">
             Atajos de Cantidad
           </label>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {quickChips.map((val) => (
               <button
                 key={val}
                 type="button"
                 onClick={() => handleQuickChip(val)}
-                className={`px-3 py-1.5 rounded-xl font-bold text-xs shrink-0 border transition ${
+                className={`min-h-[38px] px-3.5 py-1.5 rounded-xl font-bold text-xs shrink-0 border transition-all active:scale-95 ${
                   quantity === val
-                    ? 'bg-violet-600/30 border-violet-500 text-violet-300'
-                    : 'bg-zinc-800 border-zinc-700 text-zinc-300 active:bg-zinc-700'
+                    ? 'bg-[#0038a8]/30 border-blue-500 text-blue-200 shadow-sm'
+                    : 'bg-zinc-800/90 border-zinc-700/60 text-zinc-300 active:bg-zinc-700'
                 }`}
               >
                 {val} {mode === 'meter' ? 'm' : ''}
@@ -210,16 +217,16 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
         </div>
 
         {/* Quantity Stepper & Price Calculation */}
-        <div className="bg-zinc-800/80 border border-zinc-700/80 rounded-2xl p-3 flex items-center justify-between">
+        <div className="bg-zinc-800/90 border border-zinc-700/80 rounded-2xl p-3.5 flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Cantidad</div>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-300">Cantidad</div>
+            <div className="flex items-center gap-2 mt-1.5">
               <button
                 type="button"
                 onClick={() => adjustQuantity(-1)}
-                className="w-8 h-8 rounded-xl bg-zinc-700 text-white font-bold flex items-center justify-center active:bg-zinc-600"
+                className="w-11 h-11 rounded-xl bg-zinc-700 hover:bg-zinc-650 text-white font-black text-base flex items-center justify-center active:scale-90 transition border border-zinc-600/60"
               >
-                <Minus className="w-3.5 h-3.5" />
+                <Minus className="w-4 h-4 stroke-[2.5]" />
               </button>
               <input
                 type="number"
@@ -227,21 +234,21 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
                 min="0.5"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(0.1, parseFloat(e.target.value) || 0))}
-                className="w-16 text-center font-black text-base bg-transparent text-white focus:outline-none border-b border-zinc-600 pb-0.5"
+                className="w-16 text-center font-black text-lg bg-transparent text-white focus:outline-none border-b-2 border-zinc-600 focus:border-[#0038a8] pb-0.5 tabular-nums"
               />
               <button
                 type="button"
                 onClick={() => adjustQuantity(1)}
-                className="w-8 h-8 rounded-xl bg-zinc-700 text-white font-bold flex items-center justify-center active:bg-zinc-600"
+                className="w-11 h-11 rounded-xl bg-zinc-700 hover:bg-zinc-650 text-white font-black text-base flex items-center justify-center active:scale-90 transition border border-zinc-600/60"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Subtotal</div>
-            <div className="text-lg font-black text-emerald-400 mt-1">{formatBs(subtotal)}</div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-300">Subtotal</div>
+            <div className="text-xl font-black text-emerald-400 mt-1 tabular-nums">{formatBs(subtotal)}</div>
           </div>
         </div>
 
@@ -249,9 +256,9 @@ export function UnitSelectionModal({ product, onClose, onAddToCart }: UnitSelect
         <button
           type="button"
           onClick={handleConfirm}
-          className="w-full bg-violet-600 hover:bg-violet-700 active:scale-[0.99] text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-violet-600/30 transition flex items-center justify-center gap-2"
+          className="w-full bg-[#0038a8] hover:bg-[#0048d1] active:scale-[0.98] text-white min-h-[52px] py-3.5 rounded-2xl font-bold text-sm shadow-xl shadow-[#0038a8]/40 transition flex items-center justify-center gap-2 border border-blue-400/30"
         >
-          <Check className="w-4 h-4" />
+          <Check className="w-5 h-5 stroke-[2.5]" />
           <span>Añadir al Ticket ({formatBs(subtotal)})</span>
         </button>
       </div>
