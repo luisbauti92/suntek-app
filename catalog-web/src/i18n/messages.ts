@@ -8,6 +8,7 @@ const es = {
     label: 'Idioma',
   },
   nav: {
+    searchShort: 'Buscar',
     searchLabel: 'Buscar en el catálogo',
     searchPlaceholder: 'Nombre o código (SKU)',
     whatsapp: 'Escribir por WhatsApp',
@@ -33,6 +34,13 @@ const es = {
   },
   listing: {
     title: 'Productos',
+  },
+  pagination: {
+    label: 'Paginación',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    page: 'Página {{current}} de {{total}}',
+    goToPage: 'Ir a la página {{n}}',
   },
   filters: {
     title: 'Filtros',
@@ -82,6 +90,7 @@ const en: Messages = {
     label: 'Language',
   },
   nav: {
+    searchShort: 'Search',
     searchLabel: 'Search the catalog',
     searchPlaceholder: 'Name or code (SKU)',
     whatsapp: 'Message us on WhatsApp',
@@ -106,6 +115,13 @@ const en: Messages = {
   },
   listing: {
     title: 'Products',
+  },
+  pagination: {
+    label: 'Pagination',
+    previous: 'Previous',
+    next: 'Next',
+    page: 'Page {{current}} of {{total}}',
+    goToPage: 'Go to page {{n}}',
   },
   filters: {
     title: 'Filters',
