@@ -1,8 +1,11 @@
 /**
  * Public catalog aligned with backend `Product` / `InventoryItems`:
- * Name, Sku, PricePerRoll, PricePerMeter, Quantity, Width, Length, UnitType (+ rolls/box, stock splits for UI).
+ * Name, Sku, PricePerRoll, PricePerMeter, Quantity, Width, Length, UnitType (+ rolls/box,
+ * stock splits for UI).
  */
 export type CatalogCategory = 'films' | 'tools' | 'accessories';
+
+export const CATEGORIES: CatalogCategory[] = ['films', 'tools', 'accessories'];
 
 export type UnitType = 'Meters' | 'Units' | 0 | 1;
 
@@ -21,16 +24,10 @@ export interface CatalogProduct {
   wholesaleQuantity: number;
   retailQuantity: number;
   category: CatalogCategory;
-  /** Sidebar filter + badge grouping. */
+  /** Kept for data compatibility; not used in the public UI. */
   brand: string;
-  /** Optional marketing / spec chips (simulated until API provides them). */
+  /** Optional spec fields, populated once the API provides them. */
   milThickness?: string;
   uvProtection?: string;
   imageUrl?: string | null;
 }
-
-export const CATEGORY_LABELS: Record<CatalogCategory, string> = {
-  films: 'Window films',
-  tools: 'Tools',
-  accessories: 'Accessories',
-};

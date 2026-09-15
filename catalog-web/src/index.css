@@ -1,27 +1,38 @@
 @import "tailwindcss";
 
-/* SUNTEK brand — extracted from logo (azul rey + cielo + blanco) */
+@theme {
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /* Committed type scale: 12 / 14 / 16 / 20 / 28 / 44 */
+  --text-title: 1.75rem;
+  --text-title--line-height: 1.15;
+  --text-display: 2.75rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+}
+
 :root {
+  color-scheme: light;
+
+  /* SUNTEK brand — azul rey + cielo, taken from the logo */
   --primary: #002d9c;
+  --primary-hover: #001f70;
   --secondary: #009ddf;
+  --secondary-soft: rgba(0, 157, 223, 0.12);
+
+  /* Neutrals, tinted a whisper toward the brand hue */
   --bg: #ffffff;
   --surface: #ffffff;
-  --surface-muted: #f4f7fb;
+  --surface-muted: #f5f7fc;
   --text: #334155;
+  --text-strong: #0f172a;
   --text-h: #002d9c;
   --border: #e2e8f0;
   --border-strong: rgba(0, 45, 156, 0.18);
-  --primary-hover: #001f70;
-  --secondary-soft: rgba(0, 157, 223, 0.12);
-  --code-bg: #f1f5f9;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 16px/150% var(--sans);
-  letter-spacing: 0.01em;
-  color-scheme: light;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -30,16 +41,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-#root {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  text-align: left;
-  border: none;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -47,40 +50,36 @@ body {
   background: var(--bg);
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 600;
-  color: var(--text-h);
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
 }
 
-p {
-  margin: 0;
+::selection {
+  background: var(--secondary-soft);
 }
 
-code {
-  font-family: var(--mono);
-  font-size: 14px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: var(--code-bg);
-  color: var(--text-h);
-}
-
-/* Fondo de página muy sutil */
-.catalog-bg {
-  background-color: var(--bg);
-  background-image: radial-gradient(
-    ellipse 100% 60% at 50% 0%,
-    rgba(0, 157, 223, 0.06),
-    transparent 55%
-  );
-}
-
+/* Minimal scrollbar for the category rail */
 .custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
   width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(0, 157, 223, 0.45);
   border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
