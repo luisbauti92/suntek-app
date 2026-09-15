@@ -33,3 +33,8 @@ dist-ssr/
 .cursorrules
 .cursorrules.save
 PROJECT_CONTEXT.md
+
+# Command Code — se versiona la documentación de diseño (.commandcode/design/brief.md),
+# no el estado personal del agente.
+.commandcode/settings.json
+.commandcode/taste/

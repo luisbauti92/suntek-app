@@ -1,44 +1,57 @@
-import type { CatalogCategory, CatalogProduct } from '../types/catalog';
+import { CATEGORIES, type CatalogCategory, type CatalogProduct } from '../types/catalog';
 
 export interface CatalogFilterState {
   search: string;
   /** Empty = all categories */
   categories: Set<CatalogCategory>;
-  /** Empty = all brands */
-  brands: Set<string>;
   priceMin: number | null;
   priceMax: number | null;
 }
 
-function norm(s: string): string {
-  return s.trim().toLowerCase();
+function norm(value: string): string {
+  return value.trim().toLowerCase();
 }
 
-/** Reference price for range filter: roll price if &gt; 0, else meter, else 0 */
-export function catalogListPrice(p: CatalogProduct): number {
-  if (p.pricePerRoll > 0) return p.pricePerRoll;
-  if (p.pricePerMeter > 0) return p.pricePerMeter;
+/** Reference price for the range filter: roll price if > 0, else meter, else 0 */
+function catalogListPrice(product: CatalogProduct): number {
+  if (product.pricePerRoll > 0) return product.pricePerRoll;
+  if (product.pricePerMeter > 0) return product.pricePerMeter;
   return 0;
 }
 
 export function filterCatalogProducts(
   products: CatalogProduct[],
-  f: CatalogFilterState
+  filter: CatalogFilterState
 ): CatalogProduct[] {
-  const q = norm(f.search);
-  return products.filter((p) => {
-    if (q && !p.name.toLowerCase().includes(q) && !p.sku.toLowerCase().includes(q)) {
+  const query = norm(filter.search);
+
+  return products.filter((product) => {
+    if (
+      query &&
+      !product.name.toLowerCase().includes(query) &&
+      !product.sku.toLowerCase().includes(query)
+    ) {
       return false;
     }
-    if (f.categories.size > 0 && !f.categories.has(p.category)) return false;
-    if (f.brands.size > 0 && !f.brands.has(p.brand)) return false;
-    const list = catalogListPrice(p);
-    if (f.priceMin != null && list < f.priceMin) return false;
-    if (f.priceMax != null && list > f.priceMax) return false;
+    if (filter.categories.size > 0 && !filter.categories.has(product.category)) return false;
+
+    const listPrice = catalogListPrice(product);
+    if (filter.priceMin != null && listPrice < filter.priceMin) return false;
+    if (filter.priceMax != null && listPrice > filter.priceMax) return false;
+
     return true;
   });
 }
 
-export function uniqueBrands(products: CatalogProduct[]): string[] {
-  return [...new Set(products.map((p) => p.brand))].sort((a, b) => a.localeCompare(b));
+/** Only the categories that actually have products in the loaded data. */
+export function availableCategories(products: CatalogProduct[]): CatalogCategory[] {
+  const present = new Set(products.map((product) => product.category));
+  return CATEGORIES.filter((category) => present.has(category));
+}
+
+export function countActiveFilters(filter: CatalogFilterState): number {
+  let count = filter.categories.size;
+  if (filter.priceMin != null) count += 1;
+  if (filter.priceMax != null) count += 1;
+  return count;
 }
