@@ -48,6 +48,10 @@ export interface BatchSaleItemRequest {
   quantity: number;
   saleType: number; // 0 = Wholesale, 1 = Retail
   unitPrice: number;
+  /** Unit sold, matching the backend SoldUnit enum names. */
+  unit: 'Meters' | 'Rolls' | 'Boxes' | 'Units';
+  /** Quantity as the operator entered it, before the deduction conversion. */
+  enteredQuantity: number;
 }
 
 export interface RecordBatchSalePayload {

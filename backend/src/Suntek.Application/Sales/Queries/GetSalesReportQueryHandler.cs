@@ -27,8 +27,10 @@ public class GetSalesReportQueryHandler(
                 DateUtc: m.CreatedAt.Kind == DateTimeKind.Utc ? m.CreatedAt : DateTime.SpecifyKind(m.CreatedAt, DateTimeKind.Utc),
                 Sku: m.Product.Sku,
                 ProductName: m.Product.Name,
-                Quantity: m.Sale!.Quantity,
-                Unit: m.QuantityUnit,
+                Quantity: m.Sale!.EnteredQuantity ?? m.Sale.Quantity,
+                // Prefer the unit recorded on the sale (it can say "Rolls"); older rows fall back
+                // to the movement, which only ever knows meters/units/boxes.
+                Unit: m.Sale.Unit ?? m.QuantityUnit,
                 UnitPriceBs: m.Sale.UnitPrice,
                 TotalBs: m.Sale.TotalPrice))
             .ToList();

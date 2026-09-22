@@ -58,6 +58,23 @@ export function modeUnitShort(mode: SaleMode): string {
   }
 }
 
+/**
+ * Canonical unit token the API persists for a mode. These names must match the backend
+ * `SoldUnit` enum, which is how the sale records what it was actually sold in.
+ */
+export function soldUnitToken(mode: SaleMode): 'Meters' | 'Rolls' | 'Boxes' | 'Units' {
+  switch (mode) {
+    case 'meter':
+      return 'Meters';
+    case 'roll':
+      return 'Rolls';
+    case 'box':
+      return 'Boxes';
+    case 'unit':
+      return 'Units';
+  }
+}
+
 /** Display suffix for a line, e.g. "3 mt" or "0,50 mt". */
 export function describeQuantity(quantity: number, unitShort: string): string {
   const decimals = Number.isInteger(quantity) ? 0 : 2;

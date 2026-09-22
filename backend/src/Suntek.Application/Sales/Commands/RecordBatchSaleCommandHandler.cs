@@ -106,13 +106,18 @@ public class RecordBatchSaleCommandHandler(
             product.UpdatedAt = DateTime.UtcNow;
 
             var unitPrice = Round2(item.UnitPrice);
-            var itemTotal = Round2(item.Quantity * unitPrice);
+            // The money follows the quantity the operator entered. Quantity stays the deducted
+            // amount, and a client that predates EnteredQuantity keeps the old behaviour.
+            var enteredQuantity = item.EnteredQuantity ?? item.Quantity;
+            var itemTotal = Round2(enteredQuantity * unitPrice);
             grandTotal += itemTotal;
 
             var sale = new Sale
             {
                 ProductId = product.Id,
                 Quantity = item.Quantity,
+                EnteredQuantity = item.EnteredQuantity,
+                Unit = item.Unit?.ToString(),
                 SaleType = item.SaleType,
                 UnitPrice = unitPrice,
                 TotalPrice = itemTotal,

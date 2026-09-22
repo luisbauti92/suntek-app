@@ -15,6 +15,7 @@ public class ExcelService : IExcelService
         ["Boxes"] = ("Cajas", "Boxes"),
         ["Meters"] = ("Metros", "Meters"),
         ["Units"] = ("Unidades", "Units"),
+        ["Rolls"] = ("Rollos", "Rolls"),
     };
 
     public byte[] GenerateSalesReport(IEnumerable<SaleReportDto> data, string language)

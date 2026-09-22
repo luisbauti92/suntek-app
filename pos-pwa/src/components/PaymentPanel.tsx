@@ -3,6 +3,7 @@ import { Check, Loader2, AlertCircle, Banknote, QrCode, Split } from 'lucide-rea
 import type { CartItem, RecordBatchSalePayload, BatchSaleResponse } from '../types';
 import { salesApi } from '../api/client';
 import { formatBs } from '../utils/formatBs';
+import { soldUnitToken } from '../utils/saleUnits';
 import { haptics } from '../utils/haptics';
 
 interface PaymentPanelProps {
@@ -92,6 +93,8 @@ export function PaymentPanel({
         quantity: i.quantity,
         saleType: i.saleType === 'Wholesale' ? 0 : 1,
         unitPrice: i.unitPrice,
+        unit: soldUnitToken(i.mode),
+        enteredQuantity: i.enteredQuantity,
       })),
       clientName: clientName.trim() || undefined,
       paymentMethod: paymentMethodNum,
