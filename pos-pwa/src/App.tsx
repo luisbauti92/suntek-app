@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   BarChart3,
 } from 'lucide-react';
+import logo from './assets/logo.svg';
 import type { ProductDto, CartItem, AuthUser, BatchSaleResponse, CategoryFilter, SaleMode } from './types';
 import { inventoryApi, authApi } from './api/client';
 import { ProductBrowser } from './components/ProductBrowser';
@@ -240,8 +241,8 @@ export function App() {
         <div className="flex items-center gap-4 px-4 pb-3">
           <div className="flex min-w-0 items-center gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-blue-400/30 bg-[#0038a8] text-xs font-black tracking-wider text-white">
-                ST
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white p-0.5">
+                <img src={logo} alt="" aria-hidden className="h-full w-full" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">

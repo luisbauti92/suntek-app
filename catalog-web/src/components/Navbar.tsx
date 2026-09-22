@@ -2,6 +2,7 @@ import { MessageCircle, Search } from 'lucide-react';
 import { useLanguage } from '../contexts/useLanguage';
 import { buildWhatsAppUrl } from '../utils/whatsapp';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import logo from '../assets/logo.svg';
 
 interface NavbarProps {
   /** Compact search affordance, shown once the page has scrolled past the real search field. */
@@ -18,8 +19,9 @@ export function Navbar({ showSearchShortcut, onSearchShortcut }: NavbarProps) {
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-1.5">
         <a
           href="/"
-          className="inline-flex min-h-11 items-center rounded text-xl font-black uppercase tracking-tight text-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
+          className="inline-flex min-h-11 items-center gap-2 rounded text-xl font-black uppercase tracking-tight text-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
         >
+          <img src={logo} alt="" aria-hidden className="h-6 w-6" />
           SUNTEK
         </a>
 

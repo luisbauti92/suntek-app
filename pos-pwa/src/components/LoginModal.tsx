@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LogIn, Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
 import { authApi } from '../api/client';
 import type { AuthUser } from '../types';
+import logo from '../assets/logo.svg';
 
 interface LoginModalProps {
   onSuccess: (user: AuthUser) => void;
@@ -39,8 +40,8 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl text-white">
         <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#0038a8] border border-blue-400/30 flex items-center justify-center mx-auto mb-3 text-white font-black text-xl tracking-wider">
-            ST
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white p-1">
+            <img src={logo} alt="" aria-hidden className="h-full w-full" />
           </div>
           <h2 className="text-lg font-black tracking-wide">SUNTEK POS</h2>
           <p className="text-xs text-zinc-300 mt-1">Terminal de Ventas Móvil</p>

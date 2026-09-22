@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import logo from '../assets/logo.svg';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -48,6 +49,7 @@ export function LoginPage() {
       <div className="relative w-full max-w-md">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-slate-200/50">
           <div className="text-center mb-8">
+            <img src={logo} alt="" aria-hidden className="mx-auto mb-3 h-12 w-12" />
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">SUNTEK</h1>
             <p className="text-slate-500 mt-1 text-sm">{t('auth.signInSubtitle')}</p>
           </div>
