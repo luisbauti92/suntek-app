@@ -36,12 +36,17 @@ public class RecordSaleCommandHandler(
 
         product.UpdatedAt = DateTime.UtcNow;
         var unitPrice = Round2(request.UnitPrice);
+        // This path records the quantity the operator typed, so entered and deducted coincide.
         var totalPrice = Round2(request.Quantity * unitPrice);
+
+        var quantityUnit = request.SaleType == SaleType.Wholesale ? "Boxes" : (product.UnitType == UnitType.Meters ? "Meters" : "Units");
 
         var sale = new Sale
         {
             ProductId = product.Id,
             Quantity = request.Quantity,
+            EnteredQuantity = request.Quantity,
+            Unit = quantityUnit,
             SaleType = request.SaleType,
             UnitPrice = unitPrice,
             TotalPrice = totalPrice,
@@ -55,7 +60,6 @@ public class RecordSaleCommandHandler(
         var savedSale = await saleRepository.AddAsync(sale, ct);
         await productRepository.UpdateAsync(product, ct);
 
-        var quantityUnit = request.SaleType == SaleType.Wholesale ? "Boxes" : (product.UnitType == UnitType.Meters ? "Meters" : "Units");
         var clientNote = string.IsNullOrWhiteSpace(request.ClientName) ? "" : $" (Cliente: {request.ClientName.Trim()})";
         var payNote = request.PaymentMethod == PaymentMethod.QrBcp ? " [QR BCP]" : (request.PaymentMethod == PaymentMethod.Mixed ? " [Mixto]" : " [Efectivo]");
         var description = request.SaleType == SaleType.Wholesale

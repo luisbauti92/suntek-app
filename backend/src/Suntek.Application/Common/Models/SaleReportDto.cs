@@ -5,5 +5,6 @@ public record SaleReportDto(
     string Sku,
     string ProductName,
     decimal Quantity,
+    string Unit,
     decimal UnitPriceBs,
     decimal TotalBs);

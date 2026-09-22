@@ -4,5 +4,5 @@ namespace Suntek.Application.Common.Interfaces;
 
 public interface IExcelService
 {
-    byte[] GenerateSalesReport(IEnumerable<SaleReportDto> data);
+    byte[] GenerateSalesReport(IEnumerable<SaleReportDto> data, string language);
 }

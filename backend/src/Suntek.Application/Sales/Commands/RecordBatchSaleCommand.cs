@@ -4,11 +4,15 @@ using Suntek.Domain.Enums;
 
 namespace Suntek.Application.Sales.Commands;
 
+// Unit and EnteredQuantity are optional so clients that predate them keep working: when they
+// are absent the handler falls back to the previous behaviour (Quantity * UnitPrice).
 public record BatchSaleItemDto(
     int ProductId,
     decimal Quantity,
     SaleType SaleType,
-    decimal UnitPrice);
+    decimal UnitPrice,
+    SoldUnit? Unit = null,
+    decimal? EnteredQuantity = null);
 
 public record RecordBatchSaleCommand(
     List<BatchSaleItemDto> Items,
