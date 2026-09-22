@@ -22,7 +22,7 @@ public class ExportSalesReportEndpoint(IMediator mediator) : Endpoint<ExportSale
     public override async Task HandleAsync(ExportSalesReportRequest req, CancellationToken ct)
     {
         var bytes = await mediator.Send(
-            new GetSalesReportQuery(req.StartDate, req.EndDate),
+            new GetSalesReportQuery(req.StartDate, req.EndDate, ResolveLanguage()),
             ct);
 
         await Send.StreamAsync(
@@ -31,5 +31,17 @@ public class ExportSalesReportEndpoint(IMediator mediator) : Endpoint<ExportSale
             bytes.Length,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             cancellation: ct);
+    }
+
+    /// <summary>
+    /// Reads the caller's language from <c>Accept-Language</c>. Anything that is not English
+    /// falls back to Spanish, which is the default for the whole application.
+    /// </summary>
+    private string ResolveLanguage()
+    {
+        var header = HttpContext.Request.Headers.AcceptLanguage.ToString();
+        var primary = header.Split(',')[0].Split(';')[0].Trim();
+
+        return primary.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "en" : "es";
     }
 }

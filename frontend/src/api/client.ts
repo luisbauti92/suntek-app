@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { readStoredLocale } from '../i18n/locales';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 const TOKEN_KEY = 'suntek_token';
@@ -25,6 +26,8 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // The selected UI language drives server-rendered output (e.g. the sales report).
+  config.headers['Accept-Language'] = readStoredLocale();
   return config;
 });
 

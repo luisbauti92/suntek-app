@@ -28,10 +28,11 @@ public class GetSalesReportQueryHandler(
                 Sku: m.Product.Sku,
                 ProductName: m.Product.Name,
                 Quantity: m.Sale!.Quantity,
+                Unit: m.QuantityUnit,
                 UnitPriceBs: m.Sale.UnitPrice,
                 TotalBs: m.Sale.TotalPrice))
             .ToList();
 
-        return excelService.GenerateSalesReport(dtos);
+        return excelService.GenerateSalesReport(dtos, request.Language);
     }
 }
