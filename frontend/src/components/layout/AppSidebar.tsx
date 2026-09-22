@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { ErpNavId } from './erpNav';
+import logo from '../../assets/logo.svg';
 
 interface AppSidebarProps {
   active: ErpNavId;
@@ -56,8 +57,8 @@ export function AppSidebar({
       aria-label={t('erp.sidebarAria')}
     >
       <div className="flex h-14 items-center gap-2 border-b border-zinc-800/80 px-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-sm font-bold tracking-tight text-white">
-          S
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white p-0.5">
+          <img src={logo} alt="" aria-hidden className="h-full w-full" />
         </div>
         {!collapsed && (
           <div className="min-w-0 flex-1">
