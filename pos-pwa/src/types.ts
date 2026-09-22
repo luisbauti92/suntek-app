@@ -19,6 +19,12 @@ export interface ProductDto {
 
 export type SaleType = 'Wholesale' | 'Retail';
 
+/** Presentation buckets the POS filters by today. Derived from the product name, not an API field. */
+export type CategoryFilter = 'all' | 'Polarizados' | 'Vinilos' | 'Accesorios';
+
+/** The unit a line is sold in. Drives price and deducted stock without changing the API contract. */
+export type SaleMode = 'meter' | 'roll' | 'box' | 'unit';
+
 export type PaymentMethod = 'Cash' | 'QrBcp' | 'Mixed';
 
 export interface CartItem {
@@ -31,6 +37,10 @@ export interface CartItem {
   unitLabel: string; // 'mt', 'rollo', 'caja', 'un'
   unitPrice: number;
   subtotal: number;
+  /** Unit the operator chose, kept so the line can be edited in place. */
+  mode: SaleMode;
+  /** Quantity the operator typed, before any meter conversion the API deducts. */
+  enteredQuantity: number;
 }
 
 export interface BatchSaleItemRequest {

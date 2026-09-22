@@ -8,6 +8,12 @@
   --color-suntek-700: #002d9c;
   --color-suntek-800: #001f66;
   --color-suntek-900: #001340;
+
+  /* Committed micro type scale for operator labels (12 / 14 / 16) */
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.1;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.2;
 }
 
 :root {
@@ -15,6 +21,7 @@
   --suntek-blue: #0038a8;
   --suntek-blue-hover: #0045cc;
   --suntek-blue-dark: #002673;
+  --focus-ring: #60a5fa;
 }
 
 html, body {
@@ -23,18 +30,31 @@ html, body {
   background-color: #09090b;
   color: #fafafa;
   -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
 }
 
+/* Text selection is suppressed only for touch input, where it fights taps and drags.
+   Pointer devices keep normal selection so operators can copy SKUs and ticket codes. */
+@media (pointer: coarse) {
+  html, body {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* Visible focus for every interactive element, drawn by the platform, never removed. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 /* Custom minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -64,7 +84,7 @@ html, body {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
 }
 
-/* Hide scrollbar for category pills */
+/* Hide scrollbar for the anchor rail */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -73,4 +93,13 @@ html, body {
   scrollbar-width: none;
 }
 
-
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
