@@ -22,4 +22,10 @@
     <ProjectReference Include="..\Suntek.Infrastructure\Suntek.Infrastructure.csproj" />
   </ItemGroup>
 
+  <!-- Program.cs usa top-level statements, así que la clase Program es interna.
+       Los tests de integración necesitan verla para arrancar la app con WebApplicationFactory. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Suntek.IntegrationTests" />
+  </ItemGroup>
+
 </Project>
