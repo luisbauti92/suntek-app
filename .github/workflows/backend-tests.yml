@@ -1,0 +1,67 @@
+name: backend-tests
+
+# Workflow reutilizable: lo llama el CI de PRs (para dar señal antes de mergear)
+# y el deploy (como gate antes de construir imágenes). Una sola definición, así el
+# gate valida exactamente lo mismo que ves en el pull request.
+on:
+  workflow_call:
+
+jobs:
+  test:
+    # Docker ya viene corriendo en los runners de GitHub, así que Testcontainers
+    # funciona sin configuración extra. Nunca macOS/Windows: no pueden correr
+    # contenedores Linux.
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('backend/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Build
+        run: dotnet build backend/Suntek.slnx -c Release
+
+      # Éste es el gate. Los tests corren como binario porque en .NET 10
+      # `dotnet test` ya no acepta el target VSTest para proyectos de
+      # Microsoft.Testing.Platform. Sale 0 si pasan y 1 si fallan.
+      - name: Tests de integración
+        run: backend/tests/Suntek.IntegrationTests/bin/Release/net10.0/Suntek.IntegrationTests
+
+      # El coverage es informativo, no un gate: va aparte y con continue-on-error
+      # para que un problema de la herramienta no bloquee un despliegue.
+      - name: Instalar dotnet-coverage
+        if: always()
+        continue-on-error: true
+        run: dotnet tool install --global dotnet-coverage
+
+      - name: Recolectar cobertura
+        if: always()
+        continue-on-error: true
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet-coverage collect -f cobertura -o coverage.cobertura.xml \
+            backend/tests/Suntek.IntegrationTests/bin/Release/net10.0/Suntek.IntegrationTests
+
+      - name: Resumen de cobertura
+        if: always()
+        continue-on-error: true
+        run: |
+          test -f coverage.cobertura.xml || { echo "Sin reporte de cobertura."; exit 0; }
+          python3 -c "import xml.etree.ElementTree as E; r = E.parse('coverage.cobertura.xml').getroot(); ls = [l for p in r.iter('package') if p.get('name','').startswith('Suntek') and 'Tests' not in p.get('name','') for l in p.iter('line')]; c = sum(1 for l in ls if int(l.get('hits', 0)) > 0); print(f'Cobertura (ensamblados Suntek): {c}/{len(ls)} líneas = {100*c/len(ls):.1f}%' if ls else 'Sin datos de ensamblados Suntek.')" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Subir reporte de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: coverage.cobertura.xml
+          if-no-files-found: ignore
