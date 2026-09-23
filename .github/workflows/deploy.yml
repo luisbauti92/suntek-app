@@ -29,8 +29,16 @@ jobs:
             pos:
               - 'pos-pwa/**'
 
+  # Gate de despliegue: si los tests del backend fallan, no se construye ninguna
+  # imagen ni se dispara ningún webhook.
+  #
+  # Corre siempre, sin `if:`, a propósito: un job requerido que se saltea hace que
+  # GitHub saltee también a sus dependientes, y el deploy no correría en silencio.
+  backend-tests:
+    uses: ./.github/workflows/backend-tests.yml
+
   build-and-deploy:
-    needs: detect-changes
+    needs: [detect-changes, backend-tests]
     runs-on: ubuntu-latest
     permissions:
       packages: write

@@ -1,0 +1,39 @@
+name: CI
+
+# Señal antes de mergear. El workflow de deploy sólo corre en `main`, así que sin
+# esto un pull request no recibiría ninguna validación hasta después del merge.
+on:
+  pull_request:
+  push:
+    branches: [dev]
+
+jobs:
+  backend-tests:
+    uses: ./.github/workflows/backend-tests.yml
+
+  frontends:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [frontend, catalog-web, pos-pwa]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.app }}/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        working-directory: ${{ matrix.app }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Compilar
+        working-directory: ${{ matrix.app }}
+        run: pnpm build
