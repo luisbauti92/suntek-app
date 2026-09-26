@@ -1,11 +1,14 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Suntek.Application.Sales.Commands;
 using Suntek.Domain.Entities;
 using Suntek.Domain.Enums;
 using Suntek.Domain.Interfaces;
 using Suntek.Infrastructure.Persistence;
+using Xunit;
 
 namespace Suntek.IntegrationTests.Infrastructure;
 
@@ -65,6 +68,20 @@ internal static class SaleScenario
     {
         await using var scope = services.CreateAsyncScope();
         return await read(scope.ServiceProvider.GetRequiredService<AppDbContext>());
+    }
+
+    /// <summary>Token del admin sembrado por la API, para pegarle a los endpoints.</summary>
+    public static async Task<string> LoginAsAdminAsync(HttpClient client)
+    {
+        var response = await client.PostAsJsonAsync(
+            "/api/auth/login",
+            new { email = "admin@suntek.com", password = "Admin@123" },
+            TestContext.Current.CancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
+        return body.GetProperty("token").GetString()!;
     }
 
     public static Task<Sale> LastSaleAsync(IServiceProvider services, int productId) =>

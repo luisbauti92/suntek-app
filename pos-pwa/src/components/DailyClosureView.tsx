@@ -4,36 +4,54 @@ import {
   Banknote,
   QrCode,
   Split,
+  AlertCircle,
   Calendar,
   Loader2,
   ReceiptText,
 } from 'lucide-react';
-import type { DailyCashClosureResponse } from '../types';
+import type { DailyCashClosureResponse, PaymentMethod, SaleType } from '../types';
 import { salesApi } from '../api/client';
 import { formatBs, formatNumber } from '../utils/formatBs';
 
 type PaymentBadge = { label: string; className: string; Icon: typeof Banknote };
 
-function paymentBadge(method: number): PaymentBadge {
-  if (method === 1) {
-    return {
-      label: 'QR BCP',
-      className: 'border-blue-500/40 bg-[#0038a8]/25 text-blue-200',
-      Icon: QrCode,
-    };
+/**
+ * El método de pago llega como nombre del enum ("Cash" | "QrBcp" | "Mixed"), no como número.
+ * Un valor que no reconocemos se muestra como desconocido a propósito: asumir "Efectivo"
+ * afirmaría cómo se cobró, que es justo lo que no sabemos.
+ */
+function paymentBadge(method: PaymentMethod): PaymentBadge {
+  switch (method) {
+    case 'QrBcp':
+      return {
+        label: 'QR BCP',
+        className: 'border-blue-500/40 bg-[#0038a8]/25 text-blue-200',
+        Icon: QrCode,
+      };
+    case 'Mixed':
+      return {
+        label: 'Mixto',
+        className: 'border-amber-700/50 bg-amber-950/50 text-amber-300',
+        Icon: Split,
+      };
+    case 'Cash':
+      return {
+        label: 'Efectivo',
+        className: 'border-emerald-700/50 bg-emerald-950/50 text-emerald-300',
+        Icon: Banknote,
+      };
+    default:
+      return {
+        label: '—',
+        className: 'border-zinc-700/60 bg-zinc-800/80 text-zinc-300',
+        Icon: AlertCircle,
+      };
   }
-  if (method === 2) {
-    return {
-      label: 'Mixto',
-      className: 'border-amber-700/50 bg-amber-950/50 text-amber-300',
-      Icon: Split,
-    };
-  }
-  return {
-    label: 'Efectivo',
-    className: 'border-emerald-700/50 bg-emerald-950/50 text-emerald-300',
-    Icon: Banknote,
-  };
+}
+
+/** Sufijo de la cantidad. Se deriva del tipo de venta, no se asume. */
+function quantityUnit(saleType: SaleType): string {
+  return saleType === 'Wholesale' ? 'caj' : 'm/un';
 }
 
 function formatTime(isoString: string) {
@@ -174,7 +192,7 @@ export function DailyClosureView() {
                         </div>
                         <div className="mt-0.5 truncate text-[11px] text-zinc-300">
                           {sale.productName} ({formatNumber(sale.quantity)}{' '}
-                          {sale.saleType === 0 ? 'caj' : 'm/un'})
+                          {quantityUnit(sale.saleType)})
                         </div>
                         <div className="mt-2 flex items-center gap-2">
                           <span
@@ -248,7 +266,7 @@ export function DailyClosureView() {
                           <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-zinc-300">
                             {formatNumber(sale.quantity)}{' '}
                             <span className="text-zinc-400">
-                              {sale.saleType === 0 ? 'caj' : 'm/un'}
+                              {quantityUnit(sale.saleType)}
                             </span>
                           </td>
                           <td className="whitespace-nowrap px-3 py-2">

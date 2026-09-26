@@ -33,7 +33,8 @@ public class SalesEndpointTests(SuntekTestHost host)
         var product = await SaleScenario.SeedProductAsync(host.Services, UnitType.Meters, 30m, 4, 1200m, 44m);
 
         var client = host.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client));
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", await SaleScenario.LoginAsAdminAsync(client));
 
         // Payload crudo, con los nombres y tipos que usa el POS (saleType numérico, unit por nombre).
         var payload = new
@@ -57,18 +58,5 @@ public class SalesEndpointTests(SuntekTestHost host)
         Assert.Equal("Rolls", sale.Unit);
         Assert.Equal(2m, sale.EnteredQuantity);
         Assert.Equal(2400m, sale.TotalPrice);
-    }
-
-    private static async Task<string> LoginAsync(HttpClient client)
-    {
-        var response = await client.PostAsJsonAsync(
-            "/api/auth/login",
-            new { email = "admin@suntek.com", password = "Admin@123" },
-            TestContext.Current.CancellationToken);
-
-        response.EnsureSuccessStatusCode();
-
-        var body = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
-        return body.GetProperty("token").GetString()!;
     }
 }
