@@ -78,10 +78,12 @@ export interface DailySaleItem {
   productName: string;
   productSku: string;
   quantity: number;
-  saleType: number;
+  /** La API serializa los enums por su nombre, no como número (JsonStringEnumConverter). */
+  saleType: SaleType;
   unitPrice: number;
   totalPrice: number;
-  paymentMethod: number;
+  /** La API serializa los enums por su nombre, no como número (JsonStringEnumConverter). */
+  paymentMethod: PaymentMethod;
   cashAmount?: number;
   qrAmount?: number;
 }
