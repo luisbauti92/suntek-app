@@ -127,6 +127,12 @@ export interface InventoryItemDto {
   pricePerMeter: number;
   rollsPerBox: number;
   unitType: UnitTypeResponse;
+  manufacturer: string | null;
+  /**
+   * Precio referencial del fabricante, en dólares. Es dato de costo y sólo lo devuelve la API
+   * a un Admin: para cualquier otro rol llega `null`, por eso el tipo incluye null.
+   */
+  manufacturerPriceUsd: number | null;
   wholesaleQuantity: number;
   retailQuantity: number;
   status: ProductStatus;
@@ -143,6 +149,9 @@ export interface RegisterStockRequest {
   pricePerMeter: number;
   rollsPerBox: number;
   unitType: UnitType;
+  manufacturer?: string | null;
+  /** En dólares. Se omite para un operador: la API lo ignora si no es Admin. */
+  manufacturerPriceUsd?: number | null;
 }
 
 export interface UpdateProductRequest {
@@ -153,6 +162,9 @@ export interface UpdateProductRequest {
   rollsPerBox: number;
   pricePerRoll: number;
   pricePerMeter: number;
+  /** Omitirlo deja el dato como estaba. */
+  manufacturer?: string | null;
+  manufacturerPriceUsd?: number | null;
 }
 
 export interface AdjustStockRequest {

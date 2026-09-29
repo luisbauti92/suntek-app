@@ -13,6 +13,8 @@ public record ProductDto(
     decimal PricePerMeter,
     int RollsPerBox,
     UnitType UnitType,
+    string? Manufacturer,
+    decimal? ManufacturerPriceUsd,
     int WholesaleQuantity,
     decimal RetailQuantity,
     ProductStatus Status,

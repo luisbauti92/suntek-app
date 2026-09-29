@@ -1,4 +1,5 @@
 using MediatR;
+using Suntek.Application.Common.Models;
 
 namespace Suntek.Application.Inventory.Commands;
 
@@ -10,4 +11,5 @@ public record UpdateProductCommand(
     decimal Width,
     int RollsPerBox,
     decimal PricePerRoll,
-    decimal PricePerMeter) : IRequest<UpdateProductResult>;
+    decimal PricePerMeter,
+    ManufacturerInfo? Manufacturer = null) : IRequest<UpdateProductResult>;

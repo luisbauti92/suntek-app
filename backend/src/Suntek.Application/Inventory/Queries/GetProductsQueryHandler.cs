@@ -11,7 +11,7 @@ public class GetProductsQueryHandler(IProductRepository productRepository) : IRe
         var products = await productRepository.GetAllAsync(request.Status, ct);
         return products
             .Select(p => new ProductDto(p.Id, p.Sku, p.Name, p.Quantity, p.Length, p.Width, p.PricePerRoll, p.PricePerMeter,
-                p.RollsPerBox, p.UnitType, p.WholesaleQuantity, p.RetailQuantity, p.Status, p.CreatedAt))
+                p.RollsPerBox, p.UnitType, p.Manufacturer, p.ManufacturerPriceUsd, p.WholesaleQuantity, p.RetailQuantity, p.Status, p.CreatedAt))
             .ToList();
     }
 }
