@@ -57,7 +57,10 @@ public class RecordBatchSaleEndpoint(IMediator mediator) : Endpoint<RecordBatchS
             Success = true,
             TicketCode = result.TicketCode,
             TotalAmount = result.TotalAmount,
-            UpdatedProducts = result.UpdatedProducts
+            // El POS no debe recibir el costo del fabricante: se redacta igual que en inventario.
+            UpdatedProducts = result.UpdatedProducts?
+                .Select(p => p with { ManufacturerPriceUsd = ProductCost.VisiblePrice(User, p.ManufacturerPriceUsd) })
+                .ToList()
         };
         await Send.OkAsync(Response, ct);
     }

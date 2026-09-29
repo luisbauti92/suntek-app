@@ -14,6 +14,10 @@ public class UpdateInventoryRequest
     public int RollsPerBox { get; set; }
     public decimal PricePerRoll { get; set; }
     public decimal PricePerMeter { get; set; }
+    /// <summary>Fabricante o proveedor. Omitirlo deja el dato como estaba.</summary>
+    public string? Manufacturer { get; set; }
+    /// <summary>Precio referencial del fabricante en dólares. Sólo un Admin puede leerlo o escribirlo.</summary>
+    public decimal? ManufacturerPriceUsd { get; set; }
 }
 
 public class UpdateInventoryResponse
@@ -28,6 +32,8 @@ public class UpdateInventoryResponse
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    public string? Manufacturer { get; set; }
+    public decimal? ManufacturerPriceUsd { get; set; }
     public int WholesaleQuantity { get; set; }
     public decimal RetailQuantity { get; set; }
     public ProductStatus Status { get; set; }
@@ -46,7 +52,8 @@ public class UpdateInventoryEndpoint(IMediator mediator) : Endpoint<UpdateInvent
     {
         var id = Route<int>("id");
         var result = await mediator.Send(
-            new UpdateProductCommand(id, req.Sku, req.Name, req.Length, req.Width, req.RollsPerBox, req.PricePerRoll, req.PricePerMeter),
+            new UpdateProductCommand(id, req.Sku, req.Name, req.Length, req.Width, req.RollsPerBox, req.PricePerRoll, req.PricePerMeter,
+                ProductCost.ManufacturerFrom(User, req.Manufacturer, req.ManufacturerPriceUsd)),
             ct);
 
         if (result.Error == UpdateProductError.NotFound)
@@ -76,6 +83,8 @@ public class UpdateInventoryEndpoint(IMediator mediator) : Endpoint<UpdateInvent
             PricePerMeter = p.PricePerMeter,
             RollsPerBox = p.RollsPerBox,
             UnitType = p.UnitType,
+            Manufacturer = p.Manufacturer,
+            ManufacturerPriceUsd = ProductCost.VisiblePrice(User, p.ManufacturerPriceUsd),
             WholesaleQuantity = p.WholesaleQuantity,
             RetailQuantity = p.RetailQuantity,
             Status = p.Status,

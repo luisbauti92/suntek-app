@@ -12,6 +12,10 @@ public class RegisterStockCommandHandler(
 {
     private static decimal Round2(decimal v) => decimal.Round(v, 2, MidpointRounding.AwayFromZero);
 
+    /// <summary>Un fabricante en blanco se guarda como nulo, no como texto vacío.</summary>
+    private static string? CleanName(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     public async Task<ProductDto> Handle(RegisterStockCommand request, CancellationToken ct)
     {
         var existing = await productRepository.GetBySkuAsync(request.Sku, ct);
@@ -35,7 +39,8 @@ public class RegisterStockCommandHandler(
             await movementRepository.AddAsync(movement, ct);
             return new ProductDto(existing.Id, existing.Sku, existing.Name, existing.Quantity,
                 existing.Length, existing.Width, existing.PricePerRoll, existing.PricePerMeter,
-                existing.RollsPerBox, existing.UnitType, existing.WholesaleQuantity, existing.RetailQuantity, existing.Status, existing.CreatedAt);
+                existing.RollsPerBox, existing.UnitType, existing.Manufacturer, existing.ManufacturerPriceUsd,
+                existing.WholesaleQuantity, existing.RetailQuantity, existing.Status, existing.CreatedAt);
         }
 
         var product = new Product
@@ -49,6 +54,8 @@ public class RegisterStockCommandHandler(
             PricePerMeter = Round2(request.PricePerMeter),
             RollsPerBox = request.RollsPerBox,
             UnitType = request.UnitType,
+            Manufacturer = CleanName(request.Manufacturer?.Name),
+            ManufacturerPriceUsd = request.Manufacturer?.PriceUsd is decimal usd ? Round2(usd) : null,
             WholesaleQuantity = request.Quantity,
             RetailQuantity = 0
         };
@@ -67,6 +74,7 @@ public class RegisterStockCommandHandler(
         await movementRepository.AddAsync(registerMovement, ct);
         return new ProductDto(added.Id, added.Sku, added.Name, added.Quantity,
             added.Length, added.Width, added.PricePerRoll, added.PricePerMeter,
-            added.RollsPerBox, added.UnitType, added.WholesaleQuantity, added.RetailQuantity, added.Status, added.CreatedAt);
+            added.RollsPerBox, added.UnitType, added.Manufacturer, added.ManufacturerPriceUsd,
+            added.WholesaleQuantity, added.RetailQuantity, added.Status, added.CreatedAt);
     }
 }

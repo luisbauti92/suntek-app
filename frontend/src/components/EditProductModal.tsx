@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { inventoryApi } from '../api/client';
 import type { InventoryItemDto } from '../api/client';
+import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { formatBs } from '../utils/formatBs';
 import { roundMoney2 } from '../utils/money';
 
 interface EditProductModalProps {
@@ -32,6 +34,7 @@ function readApiError(err: unknown): string | null {
 
 export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProductModalProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
   const [length, setLength] = useState('');
@@ -39,8 +42,17 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
   const [rollsPerBox, setRollsPerBox] = useState('');
   const [pricePerRoll, setPricePerRoll] = useState('');
   const [pricePerMeter, setPricePerMeter] = useState('');
+  const [manufacturer, setManufacturer] = useState('');
+  const [manufacturerPriceUsd, setManufacturerPriceUsd] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // El tipo de unidad no se edita acá, así que sale del producto. Un accesorio se vende por
+  // unidad o por caja: no tiene sentido pedirle medidas ni un precio por metro (el 0
+  // numérico es `Meters`, igual que en el helper del POS).
+  const isMeters = !item || item.unitType === 'Meters' || item.unitType === 0;
+  const isAdmin = Boolean(user?.roles?.includes('Admin'));
+  const pricePerBox = roundMoney2(parseFloat(pricePerRoll) * (parseInt(rollsPerBox, 10) || 1));
 
   useEffect(() => {
     if (!isOpen || !item) return;
@@ -51,6 +63,10 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
     setRollsPerBox(String(item.rollsPerBox));
     setPricePerRoll(String(roundMoney2(item.pricePerRoll)));
     setPricePerMeter(String(roundMoney2(item.pricePerMeter)));
+    setManufacturer(item.manufacturer ?? '');
+    setManufacturerPriceUsd(
+      item.manufacturerPriceUsd == null ? '' : String(roundMoney2(item.manufacturerPriceUsd))
+    );
     setError('');
   }, [isOpen, item]);
 
@@ -89,6 +105,9 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
     }
     setIsSubmitting(true);
     try {
+      const priceUsd =
+        manufacturerPriceUsd.trim() === '' ? null : roundMoney2(parseFloat(manufacturerPriceUsd));
+
       await inventoryApi.update(item.id, {
         sku: sku.trim(),
         name: name.trim(),
@@ -97,6 +116,11 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
         rollsPerBox: rpb,
         pricePerRoll: roll,
         pricePerMeter: meter,
+        // Un operador no ve estos campos: se omiten para que la API deje el dato como estaba
+        // en vez de interpretar la ausencia como un borrado.
+        ...(isAdmin
+          ? { manufacturer: manufacturer.trim() || null, manufacturerPriceUsd: priceUsd }
+          : {}),
       });
       toast.success(t('editProduct.success'));
       onSuccess();
@@ -113,7 +137,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-200/80 overflow-hidden">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl border border-slate-200/80">
         <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
           <h2 className="text-lg font-semibold text-slate-900">{t('editProduct.title')}</h2>
           <p className="text-sm text-slate-500 mt-0.5">{t('editProduct.subtitle')}</p>
@@ -158,51 +182,58 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
           </div>
 
           <div className="grid grid-cols-3 gap-4">
+            {isMeters && (
+              <div>
+                <label htmlFor="edit-length" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.length')}
+                </label>
+                <input
+                  id="edit-length"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={length}
+                  onChange={(e) => setLength(e.target.value)}
+                  onBlur={() => {
+                    const v = parseFloat(length);
+                    if (!Number.isNaN(v)) setLength(String(roundMoney2(v)));
+                  }}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="0"
+                />
+              </div>
+            )}
+            {isMeters && (
+              <div>
+                <label htmlFor="edit-width" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.width')}
+                </label>
+                <input
+                  id="edit-width"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={width}
+                  onChange={(e) => setWidth(e.target.value)}
+                  onBlur={() => {
+                    const v = parseFloat(width);
+                    if (!Number.isNaN(v)) setWidth(String(roundMoney2(v)));
+                  }}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="0"
+                />
+              </div>
+            )}
             <div>
-              <label htmlFor="edit-length" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.length')}
-              </label>
-              <input
-                id="edit-length"
-                type="number"
-                min={0}
-                step={0.01}
-                inputMode="decimal"
-                value={length}
-                onChange={(e) => setLength(e.target.value)}
-                onBlur={() => {
-                  const v = parseFloat(length);
-                  if (!Number.isNaN(v)) setLength(String(roundMoney2(v)));
-                }}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label htmlFor="edit-width" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.width')}
-              </label>
-              <input
-                id="edit-width"
-                type="number"
-                min={0}
-                step={0.01}
-                inputMode="decimal"
-                value={width}
-                onChange={(e) => setWidth(e.target.value)}
-                onBlur={() => {
-                  const v = parseFloat(width);
-                  if (!Number.isNaN(v)) setWidth(String(roundMoney2(v)));
-                }}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label htmlFor="edit-rolls-per-box" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.rollsPerBox')}
+              <label
+                htmlFor="edit-rolls-per-box"
+                className="block text-sm font-medium text-slate-700 mb-1"
+              >
+                {isMeters ? t('productForm.rollsPerBox') : t('productForm.unitsPerBox')}
               </label>
               <input
                 id="edit-rolls-per-box"
@@ -222,7 +253,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="edit-price-roll" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.pricePerRoll')} (Bs)
+                {isMeters ? t('productForm.pricePerRoll') : t('productForm.pricePerUnit')} (Bs)
               </label>
               <input
                 id="edit-price-roll"
@@ -241,28 +272,82 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                 placeholder="0.00"
               />
             </div>
-            <div>
-              <label htmlFor="edit-price-meter" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.pricePerMeter')} (Bs)
-              </label>
-              <input
-                id="edit-price-meter"
-                type="number"
-                min={0}
-                step={0.01}
-                inputMode="decimal"
-                value={pricePerMeter}
-                onChange={(e) => setPricePerMeter(e.target.value)}
-                onBlur={() => {
-                  const v = parseFloat(pricePerMeter);
-                  if (!Number.isNaN(v)) setPricePerMeter(String(roundMoney2(v)));
-                }}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="0.00"
-              />
-            </div>
+            {isMeters ? (
+              <div>
+                <label htmlFor="edit-price-meter" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.pricePerMeter')} (Bs)
+                </label>
+                <input
+                  id="edit-price-meter"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={pricePerMeter}
+                  onChange={(e) => setPricePerMeter(e.target.value)}
+                  onBlur={() => {
+                    const v = parseFloat(pricePerMeter);
+                    if (!Number.isNaN(v)) setPricePerMeter(String(roundMoney2(v)));
+                  }}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+              </div>
+            ) : (
+              <div>
+                <span className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.pricePerBox')}
+                </span>
+                <div className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 tabular-nums">
+                  {formatBs(pricePerBox)}
+                </div>
+                <p className="mt-1 text-xs text-slate-500">{t('productForm.pricePerBoxHint')}</p>
+              </div>
+            )}
           </div>
+
+          {isAdmin && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="edit-manufacturer" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.manufacturer')}
+                </label>
+                <input
+                  id="edit-manufacturer"
+                  type="text"
+                  value={manufacturer}
+                  onChange={(e) => setManufacturer(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder={t('productForm.manufacturerPlaceholder')}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="edit-manufacturer-price"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
+                  {t('productForm.manufacturerPrice')}
+                </label>
+                <input
+                  id="edit-manufacturer-price"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={manufacturerPriceUsd}
+                  onChange={(e) => setManufacturerPriceUsd(e.target.value)}
+                  onBlur={() => {
+                    const v = parseFloat(manufacturerPriceUsd);
+                    if (!Number.isNaN(v)) setManufacturerPriceUsd(String(roundMoney2(v)));
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder={t('productForm.manufacturerPricePlaceholder')}
+                />
+                <p className="mt-1 text-xs text-slate-500">{t('productForm.manufacturerPriceHint')}</p>
+              </div>
+            </div>
+          )}
 
           <p className="text-xs text-slate-500">{t('editProduct.hint')}</p>
 

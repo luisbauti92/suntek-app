@@ -42,6 +42,7 @@ public class OpenBoxCommandHandler(
 
         return new ProductDto(product.Id, product.Sku, product.Name, product.Quantity,
             product.Length, product.Width, product.PricePerRoll, product.PricePerMeter,
-            product.RollsPerBox, product.UnitType, product.WholesaleQuantity, product.RetailQuantity, product.Status, product.CreatedAt);
+            product.RollsPerBox, product.UnitType, product.Manufacturer, product.ManufacturerPriceUsd,
+            product.WholesaleQuantity, product.RetailQuantity, product.Status, product.CreatedAt);
     }
 }
