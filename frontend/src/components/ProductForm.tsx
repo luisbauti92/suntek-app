@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { inventoryApi, type RegisterStockRequest, type UnitType } from '../api/client';
+import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { formatBs } from '../utils/formatBs';
 import { roundMoney2 } from '../utils/money';
 
 interface ProductFormProps {
@@ -24,9 +26,19 @@ const initialValues: RegisterStockRequest = {
 
 export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [form, setForm] = useState<RegisterStockRequest>(initialValues);
+  const [manufacturer, setManufacturer] = useState('');
+  const [manufacturerPriceUsd, setManufacturerPriceUsd] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // El tipo de unidad decide qué campos tienen sentido: un accesorio no se mide en metros ni
+  // se vende por rollo, se vende por unidad o por caja. En ese caso `pricePerRoll` guarda el
+  // precio por unidad, que es el campo que lee el POS para el modo Unidad.
+  const isMeters = form.unitType === 'Meters';
+  const isAdmin = Boolean(user?.roles?.includes('Admin'));
+  const pricePerBox = roundMoney2(Number(form.pricePerRoll) * (Number(form.rollsPerBox) || 1));
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -51,14 +63,23 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
     setError('');
     setIsSubmitting(true);
     try {
+      const priceUsd =
+        manufacturerPriceUsd.trim() === '' ? null : roundMoney2(parseFloat(manufacturerPriceUsd));
+
       await inventoryApi.register({
         ...form,
         length: roundMoney2(Number(form.length)),
         width: roundMoney2(Number(form.width)),
         pricePerRoll: roundMoney2(Number(form.pricePerRoll)),
         pricePerMeter: roundMoney2(Number(form.pricePerMeter)),
+        // Un operador no ve estos campos y no los manda: la API tampoco los tomaría de él.
+        ...(isAdmin
+          ? { manufacturer: manufacturer.trim() || null, manufacturerPriceUsd: priceUsd }
+          : {}),
       });
       setForm(initialValues);
+      setManufacturer('');
+      setManufacturerPriceUsd('');
       onSuccess();
       onClose();
       toast.success(t('productForm.registerSuccess'));
@@ -80,7 +101,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl border border-slate-200/80 overflow-hidden">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-2xl border border-slate-200/80">
         <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
           <h2 className="text-lg font-semibold text-slate-900">{t('productForm.title')}</h2>
           <p className="text-sm text-slate-500 mt-0.5">{t('productForm.subtitle')}</p>
@@ -144,55 +165,57 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="length" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.length')}
-              </label>
-              <input
-                id="length"
-                name="length"
-                type="number"
-                min={0}
-                step={0.01}
-                inputMode="decimal"
-                value={form.length || ''}
-                onChange={handleChange}
-                onBlur={() =>
-                  setForm((prev) => ({ ...prev, length: roundMoney2(Number(prev.length)) }))
-                }
-                required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="0"
-              />
+          {isMeters && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="length" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.length')}
+                </label>
+                <input
+                  id="length"
+                  name="length"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={form.length || ''}
+                  onChange={handleChange}
+                  onBlur={() =>
+                    setForm((prev) => ({ ...prev, length: roundMoney2(Number(prev.length)) }))
+                  }
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label htmlFor="width" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.width')}
+                </label>
+                <input
+                  id="width"
+                  name="width"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={form.width || ''}
+                  onChange={handleChange}
+                  onBlur={() =>
+                    setForm((prev) => ({ ...prev, width: roundMoney2(Number(prev.width)) }))
+                  }
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="0"
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="width" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.width')}
-              </label>
-              <input
-                id="width"
-                name="width"
-                type="number"
-                min={0}
-                step={0.01}
-                inputMode="decimal"
-                value={form.width || ''}
-                onChange={handleChange}
-                onBlur={() =>
-                  setForm((prev) => ({ ...prev, width: roundMoney2(Number(prev.width)) }))
-                }
-                required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="0"
-              />
-            </div>
-          </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="rollsPerBox" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.rollsPerBox')}
+                {isMeters ? t('productForm.rollsPerBox') : t('productForm.unitsPerBox')}
               </label>
               <input
                 id="rollsPerBox"
@@ -230,7 +253,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="pricePerRoll" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.pricePerRoll')}
+                {isMeters ? t('productForm.pricePerRoll') : t('productForm.pricePerUnit')}
               </label>
               <input
                 id="pricePerRoll"
@@ -252,31 +275,87 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 placeholder="0.00"
               />
             </div>
-            <div>
-              <label htmlFor="pricePerMeter" className="block text-sm font-medium text-slate-700 mb-1">
-                {t('productForm.pricePerMeter')}
-              </label>
-              <input
-                id="pricePerMeter"
-                name="pricePerMeter"
-                type="number"
-                min={0}
-                step={0.01}
-                inputMode="decimal"
-                value={form.pricePerMeter || ''}
-                onChange={handleChange}
-                onBlur={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    pricePerMeter: roundMoney2(Number(prev.pricePerMeter)),
-                  }))
-                }
-                required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="0.00"
-              />
-            </div>
+            {isMeters ? (
+              <div>
+                <label htmlFor="pricePerMeter" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.pricePerMeter')}
+                </label>
+                <input
+                  id="pricePerMeter"
+                  name="pricePerMeter"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={form.pricePerMeter || ''}
+                  onChange={handleChange}
+                  onBlur={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      pricePerMeter: roundMoney2(Number(prev.pricePerMeter)),
+                    }))
+                  }
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+              </div>
+            ) : (
+              <div>
+                <span className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.pricePerBox')}
+                </span>
+                <div className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 tabular-nums">
+                  {formatBs(pricePerBox)}
+                </div>
+                <p className="mt-1 text-xs text-slate-500">{t('productForm.pricePerBoxHint')}</p>
+              </div>
+            )}
           </div>
+
+          {isAdmin && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="manufacturer" className="block text-sm font-medium text-slate-700 mb-1">
+                  {t('productForm.manufacturer')}
+                </label>
+                <input
+                  id="manufacturer"
+                  name="manufacturer"
+                  type="text"
+                  value={manufacturer}
+                  onChange={(e) => setManufacturer(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder={t('productForm.manufacturerPlaceholder')}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="manufacturerPriceUsd"
+                  className="block text-sm font-medium text-slate-700 mb-1"
+                >
+                  {t('productForm.manufacturerPrice')}
+                </label>
+                <input
+                  id="manufacturerPriceUsd"
+                  name="manufacturerPriceUsd"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  value={manufacturerPriceUsd}
+                  onChange={(e) => setManufacturerPriceUsd(e.target.value)}
+                  onBlur={() => {
+                    const v = parseFloat(manufacturerPriceUsd);
+                    if (!Number.isNaN(v)) setManufacturerPriceUsd(String(roundMoney2(v)));
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder={t('productForm.manufacturerPricePlaceholder')}
+                />
+                <p className="mt-1 text-xs text-slate-500">{t('productForm.manufacturerPriceHint')}</p>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button

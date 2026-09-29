@@ -31,6 +31,16 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
         if (priceRoll < 0 || priceMeter < 0)
             return new UpdateProductResult(null, UpdateProductError.InvalidPrice);
 
+        // Sólo se toca el dato del fabricante si el pedido lo trae. Un operador editando el
+        // producto no lo manda, y no tiene que borrar lo que cargó un Admin.
+        decimal? manufacturerPriceUsd = null;
+        if (request.Manufacturer is { } manufacturer)
+        {
+            manufacturerPriceUsd = manufacturer.PriceUsd is decimal usd ? Round2(usd) : null;
+            if (manufacturerPriceUsd < 0)
+                return new UpdateProductResult(null, UpdateProductError.InvalidPrice);
+        }
+
         if (await productRepository.IsSkuTakenByOtherAsync(sku, request.Id, ct))
             return new UpdateProductResult(null, UpdateProductError.DuplicateSku);
 
@@ -41,6 +51,11 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
         product.RollsPerBox = rollsPerBox;
         product.PricePerRoll = priceRoll;
         product.PricePerMeter = priceMeter;
+        if (request.Manufacturer is { } m)
+        {
+            product.Manufacturer = string.IsNullOrWhiteSpace(m.Name) ? null : m.Name.Trim();
+            product.ManufacturerPriceUsd = manufacturerPriceUsd;
+        }
         product.UpdatedAt = DateTime.UtcNow;
 
         await productRepository.UpdateAsync(product, ct);
@@ -56,6 +71,8 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
             product.PricePerMeter,
             product.RollsPerBox,
             product.UnitType,
+            product.Manufacturer,
+            product.ManufacturerPriceUsd,
             product.WholesaleQuantity,
             product.RetailQuantity,
             product.Status,

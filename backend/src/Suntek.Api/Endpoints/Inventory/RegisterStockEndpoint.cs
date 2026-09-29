@@ -16,6 +16,10 @@ public class RegisterStockRequest
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    /// <summary>Fabricante o proveedor.</summary>
+    public string? Manufacturer { get; set; }
+    /// <summary>Precio referencial del fabricante en dólares. Sólo un Admin puede leerlo o escribirlo.</summary>
+    public decimal? ManufacturerPriceUsd { get; set; }
 }
 
 public class RegisterStockResponse
@@ -30,6 +34,8 @@ public class RegisterStockResponse
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    public string? Manufacturer { get; set; }
+    public decimal? ManufacturerPriceUsd { get; set; }
     public int WholesaleQuantity { get; set; }
     public decimal RetailQuantity { get; set; }
     public ProductStatus Status { get; set; }
@@ -48,7 +54,7 @@ public class RegisterStockEndpoint(IMediator mediator) : Endpoint<RegisterStockR
     {
         var result = await mediator.Send(new RegisterStockCommand(
             req.Sku, req.Name, req.Quantity, req.Length, req.Width, req.PricePerRoll, req.PricePerMeter,
-            req.RollsPerBox, req.UnitType), ct);
+            req.RollsPerBox, req.UnitType, ProductCost.ManufacturerFrom(User, req.Manufacturer, req.ManufacturerPriceUsd)), ct);
         Response = new RegisterStockResponse
         {
             Id = result.Id,
@@ -61,6 +67,8 @@ public class RegisterStockEndpoint(IMediator mediator) : Endpoint<RegisterStockR
             PricePerMeter = result.PricePerMeter,
             RollsPerBox = result.RollsPerBox,
             UnitType = result.UnitType,
+            Manufacturer = result.Manufacturer,
+            ManufacturerPriceUsd = ProductCost.VisiblePrice(User, result.ManufacturerPriceUsd),
             WholesaleQuantity = result.WholesaleQuantity,
             RetailQuantity = result.RetailQuantity,
             Status = result.Status,
