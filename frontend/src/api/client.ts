@@ -209,6 +209,7 @@ export interface MovementDto {
   productId: number;
   productSku: string;
   productName: string;
+  unitType: UnitTypeResponse;
   quantity: number;
   quantityUnit: string;
   description: string;
