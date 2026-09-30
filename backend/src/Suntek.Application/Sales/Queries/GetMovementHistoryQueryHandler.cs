@@ -23,6 +23,7 @@ public class GetMovementHistoryQueryHandler(IInventoryMovementRepository movemen
                 m.ProductId,
                 m.Product.Sku,
                 m.Product.Name,
+                m.Product.UnitType,
                 m.Quantity,
                 m.QuantityUnit,
                 m.Description,

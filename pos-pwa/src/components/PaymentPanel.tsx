@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Check, Loader2, AlertCircle, Banknote, QrCode, Split } from 'lucide-react';
+import { useState, useEffect, useId } from 'react';
+import { Check, Loader2, AlertCircle, Banknote, QrCode, Split, X } from 'lucide-react';
 import type { CartItem, RecordBatchSalePayload, BatchSaleResponse } from '../types';
 import { salesApi } from '../api/client';
 import { formatBs } from '../utils/formatBs';
@@ -43,6 +43,9 @@ export function PaymentPanel({
   const [receivedCash, setReceivedCash] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The rail and the mobile sheet mount this panel at the same time; a shared id
+  // would duplicate in the DOM, so every field gets one scoped to its instance.
+  const fieldId = useId();
 
   const targetCash =
     paymentChoice === 'Mixed' ? cashAmount : paymentChoice === 'Cash' ? totalAmount : 0;
@@ -60,6 +63,17 @@ export function PaymentPanel({
       setReceivedCash(targetCash);
     }
   }, [targetCash]);
+
+  // The failure notice is transient: drop it after a moment, or as soon as the ticket changes.
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => setError(null), 6000);
+    return () => clearTimeout(timer);
+  }, [error]);
+
+  useEffect(() => {
+    setError(null);
+  }, [cart.length]);
 
   function handleQrChange(val: number) {
     setQrAmount(val);
@@ -110,6 +124,7 @@ export function PaymentPanel({
         haptics.success();
         onCompleted(res);
         onClearCart();
+        setClientName('');
       } else {
         setError(res.errorMessage || 'No se pudo procesar la venta.');
       }
@@ -133,19 +148,27 @@ export function PaymentPanel({
           className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/40 flex items-start gap-2 text-rose-300 text-xs"
         >
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
-          <span>{error}</span>
+          <span className="flex-1">{error}</span>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            aria-label="Cerrar aviso"
+            className="shrink-0 -mt-1 -mr-1 flex h-8 w-8 items-center justify-center rounded-md text-rose-300 transition hover:bg-rose-500/20 hover:text-white active:scale-95"
+          >
+            <X className="w-3.5 h-3.5" aria-hidden />
+          </button>
         </div>
       )}
 
       <div>
         <label
-          htmlFor="pos-client-name"
+          htmlFor={`${fieldId}-client-name`}
           className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block mb-1.5"
         >
           Cliente (alias o nombre)
         </label>
         <input
-          id="pos-client-name"
+          id={`${fieldId}-client-name`}
           type="text"
           value={clientName}
           onChange={(e) => setClientName(e.target.value)}
@@ -185,13 +208,13 @@ export function PaymentPanel({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label
-                  htmlFor="pos-qr-amount"
+                  htmlFor={`${fieldId}-qr-amount`}
                   className="text-[10px] font-bold text-blue-300 uppercase block mb-1"
                 >
                   QR BCP (Bs)
                 </label>
                 <input
-                  id="pos-qr-amount"
+                  id={`${fieldId}-qr-amount`}
                   type="number"
                   step="1"
                   inputMode="decimal"
@@ -202,13 +225,13 @@ export function PaymentPanel({
               </div>
               <div>
                 <label
-                  htmlFor="pos-cash-amount"
+                  htmlFor={`${fieldId}-cash-amount`}
                   className="text-[10px] font-bold text-emerald-400 uppercase block mb-1"
                 >
                   Efectivo (Bs)
                 </label>
                 <input
-                  id="pos-cash-amount"
+                  id={`${fieldId}-cash-amount`}
                   type="number"
                   step="1"
                   inputMode="decimal"
@@ -284,11 +307,11 @@ export function PaymentPanel({
 
             <div className="flex items-center justify-between gap-3 pt-1 border-t border-zinc-700">
               <div className="flex items-center gap-1.5">
-                <label htmlFor="pos-received-cash" className="text-[10px] text-zinc-400 font-medium">
+                <label htmlFor={`${fieldId}-received-cash`} className="text-[10px] text-zinc-400 font-medium">
                   Recibe: Bs
                 </label>
                 <input
-                  id="pos-received-cash"
+                  id={`${fieldId}-received-cash`}
                   type="number"
                   step="1"
                   inputMode="decimal"

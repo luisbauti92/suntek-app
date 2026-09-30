@@ -19,6 +19,13 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 
 
+/** Storefront stock figure: meters are fractional, discrete units are whole. */
+function formatRetailAfter(m: MovementDto, unitMt: string, unitUnits: string): string {
+  const isMeters = m.unitType === 'Meters' || m.unitType === 0;
+  const value = Number(m.retailQuantityAfter);
+  return isMeters ? `${formatNumber(value)} ${unitMt}` : `${Math.round(value)} ${unitUnits}`;
+}
+
 function isSameLocalDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -320,8 +327,11 @@ export function MovementHistoryPanel({
                           )}
                           {m.retailQuantityAfter != null && (
                             <span>
-                              {formatNumber(Number(m.retailQuantityAfter))}{' '}
-                              {t('movements.retailSuffix')}
+                              {formatRetailAfter(
+                                m,
+                                t('movements.unitMt'),
+                                t('movements.unitUnits')
+                              )}
                             </span>
                           )}
                         </td>
