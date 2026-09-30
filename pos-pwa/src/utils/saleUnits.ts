@@ -13,21 +13,34 @@ export function isMetersProduct(product: Pick<ProductDto, 'unitType'>): boolean 
   return product.unitType === 'Meters' || product.unitType === 0;
 }
 
-/** A product sold by the unit: not measured, and not packed more than one to a box. */
+/**
+ * A single-unit accessory: not measured, and not packed more than one to a box.
+ * Presentation-only — see `isUnitProduct` for whether a product is sold by the unit.
+ */
 export function isAccessoryProduct(
   product: Pick<ProductDto, 'unitType' | 'rollsPerBox'>
 ): boolean {
   return !isMetersProduct(product) && product.rollsPerBox <= 1;
 }
 
+/**
+ * A product sold by the unit rather than by the meter, whether or not it comes packed
+ * several units to a box. Being packed is a wholesale option, not a reason to lose the
+ * unit sale.
+ */
+export function isUnitProduct(product: Pick<ProductDto, 'unitType'>): boolean {
+  return !isMetersProduct(product);
+}
+
 /** Units an operator may sell this product in. */
 export function availableModes(product: ProductDto): SaleMode[] {
-  return isAccessoryProduct(product) ? ['unit'] : ['meter', 'roll', 'box'];
+  if (isMetersProduct(product)) return ['meter', 'roll', 'box'];
+  return product.rollsPerBox > 1 ? ['unit', 'box'] : ['unit'];
 }
 
 /** The unit a product is added in when the operator just clicks it. */
 export function defaultMode(product: ProductDto): SaleMode {
-  return isAccessoryProduct(product) ? 'unit' : 'meter';
+  return isMetersProduct(product) ? 'meter' : 'unit';
 }
 
 /** Long label for unit switchers and buttons. */
@@ -79,6 +92,19 @@ export function soldUnitToken(mode: SaleMode): 'Meters' | 'Rolls' | 'Boxes' | 'U
 export function describeQuantity(quantity: number, unitShort: string): string {
   const decimals = Number.isInteger(quantity) ? 0 : 2;
   return `${formatNumber(quantity, decimals)} ${unitShort}`;
+}
+
+/**
+ * Storefront stock figure: meters are fractional, discrete units are whole.
+ * Mirrors the ERP rule in `frontend/src/pages/InventoryDashboard.tsx` so both
+ * surfaces read the same stock the same way.
+ */
+export function formatRetailQuantity(
+  product: Pick<ProductDto, 'unitType' | 'retailQuantity'>
+): string {
+  return isMetersProduct(product)
+    ? formatNumber(product.retailQuantity)
+    : String(Math.round(product.retailQuantity));
 }
 
 export interface ResolvedSaleLine {

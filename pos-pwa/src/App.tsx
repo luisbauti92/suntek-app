@@ -18,7 +18,7 @@ import { LoginModal } from './components/LoginModal';
 import { useMediaQuery } from './hooks/useMediaQuery';
 import { formatBs } from './utils/formatBs';
 import { haptics } from './utils/haptics';
-import { defaultMode, describeQuantity, resolveSaleLine } from './utils/saleUnits';
+import { defaultMode, describeQuantity, isUnitProduct, resolveSaleLine } from './utils/saleUnits';
 
 const DESKTOP_QUERY = '(min-width: 768px)';
 
@@ -198,10 +198,9 @@ export function App() {
       if (!matchSearch) return false;
       if (selectedCategory === 'all') return true;
 
-      const isMeters = p.unitType === 'Meters' || p.unitType === 0;
-      const isAccessory = !isMeters && p.rollsPerBox <= 1;
+      const isUnit = isUnitProduct(p);
 
-      if (selectedCategory === 'Accesorios') return isAccessory;
+      if (selectedCategory === 'Accesorios') return isUnit;
 
       const lower = p.name.toLowerCase();
       if (selectedCategory === 'Polarizados') {
@@ -214,7 +213,7 @@ export function App() {
       }
       if (selectedCategory === 'Vinilos') {
         return (
-          !isAccessory &&
+          !isUnit &&
           (lower.includes('vinil') ||
             lower.includes('fibra') ||
             lower.includes('reflect') ||

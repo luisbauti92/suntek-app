@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import type { ProductDto } from '../types';
-import { formatBs, formatNumber } from '../utils/formatBs';
-import { defaultMode, isAccessoryProduct, isMetersProduct, resolveSaleLine } from '../utils/saleUnits';
+import { formatBs } from '../utils/formatBs';
+import { defaultMode, formatRetailQuantity, isAccessoryProduct, isMetersProduct, isUnitProduct, resolveSaleLine } from '../utils/saleUnits';
 
 interface ProductCardProps {
   product: ProductDto;
@@ -23,11 +23,11 @@ function anchorLabel(product: ProductDto): string | null {
 
 export function ProductCard({ product, onSelect }: ProductCardProps) {
   const isMeters = isMetersProduct(product);
-  const isAccessory = isAccessoryProduct(product);
+  const isUnit = isUnitProduct(product);
   const isOutOfStock = product.wholesaleQuantity <= 0 && product.retailQuantity <= 0;
 
   const primaryPrice = resolveSaleLine(product, defaultMode(product), 1).unitPrice;
-  const rollPrice = isAccessory ? null : resolveSaleLine(product, 'roll', 1).unitPrice;
+  const rollPrice = isUnit ? null : resolveSaleLine(product, 'roll', 1).unitPrice;
 
   const anchor = anchorLabel(product);
 
@@ -51,7 +51,7 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
 
         <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-            {isAccessory ? 'unidad' : 'metro'}
+            {isUnit ? 'unidad' : 'metro'}
           </span>
           <span className="text-base font-black tabular-nums text-zinc-50">
             {formatBs(primaryPrice)}
@@ -76,7 +76,7 @@ export function ProductCard({ product, onSelect }: ProductCardProps) {
               </span>
               <span className="sr-only">,</span>
               <span>
-                Vitrina {formatNumber(product.retailQuantity)} {isMeters ? 'm' : 'un'}
+                Vitrina {formatRetailQuantity(product)} {isMeters ? 'm' : 'un'}
               </span>
             </>
           )}
