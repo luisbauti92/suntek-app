@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { X, Plus, Minus, Check, Ruler, Scroll, Package, Tag } from 'lucide-react';
 import type { ProductDto, CartItem, SaleMode } from '../types';
-import { formatBs, formatNumber } from '../utils/formatBs';
+import { formatBs } from '../utils/formatBs';
 import {
   availableModes,
   defaultMode,
   describeQuantity,
-  isAccessoryProduct,
+  formatRetailQuantity,
   isMetersProduct,
   modeLabel,
   resolveSaleLine,
@@ -41,7 +41,6 @@ function UnitSelectionSheet({
   onAddToCart: (item: CartItem) => void;
 }) {
   const isMeters = isMetersProduct(product);
-  const isAccessory = isAccessoryProduct(product);
   const modes = availableModes(product);
 
   const [mode, setMode] = useState<SaleMode>(() => defaultMode(product));
@@ -99,7 +98,7 @@ function UnitSelectionSheet({
               </span>
               <span className="text-zinc-500">•</span>
               <span>
-                Vitrina: <strong className="text-white">{formatNumber(product.retailQuantity)}</strong>{' '}
+                Vitrina: <strong className="text-white">{formatRetailQuantity(product)}</strong>{' '}
                 {isMeters ? 'm' : 'un'}
               </span>
             </div>
@@ -118,7 +117,7 @@ function UnitSelectionSheet({
           <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-wider block mb-2">
             Tipo de venta
           </span>
-          {isAccessory ? (
+          {modes.length === 1 ? (
             <div className="p-3.5 rounded-2xl bg-[#0038a8] text-white font-bold text-xs flex items-center justify-between border border-blue-400/30">
               <span className="text-sm font-extrabold flex items-center gap-2">
                 <Tag className="w-4 h-4" aria-hidden /> Por unidad

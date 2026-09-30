@@ -20,6 +20,7 @@ public class MovementDtoResponse
     public int ProductId { get; set; }
     public string ProductSku { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
+    public UnitType UnitType { get; set; }
     public decimal Quantity { get; set; }
     public string QuantityUnit { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -66,6 +67,7 @@ public class ListMovementsEndpoint(IMediator mediator) : Endpoint<MovementHistor
                 ProductId = m.ProductId,
                 ProductSku = m.ProductSku,
                 ProductName = m.ProductName,
+                UnitType = m.UnitType,
                 Quantity = m.Quantity,
                 QuantityUnit = m.QuantityUnit,
                 Description = m.Description,

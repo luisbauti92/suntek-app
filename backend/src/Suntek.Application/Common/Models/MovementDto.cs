@@ -8,6 +8,7 @@ public record MovementDto(
     int ProductId,
     string ProductSku,
     string ProductName,
+    UnitType UnitType,
     decimal Quantity,
     string QuantityUnit,
     string Description,
