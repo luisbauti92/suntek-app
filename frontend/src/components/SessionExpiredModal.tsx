@@ -43,7 +43,7 @@ export function SessionExpiredModal() {
           <button
             type="button"
             onClick={handleGoToLogin}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition"
+            className="px-4 py-2 rounded-lg bg-brand-600 text-white font-medium hover:bg-brand-700 focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 transition"
           >
             {t('auth.sessionExpiredConfirm')}
           </button>

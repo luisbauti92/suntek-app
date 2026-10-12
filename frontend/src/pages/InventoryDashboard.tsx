@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Banknote, ChevronLeft, ChevronRight, Package, Plus, Search, ShoppingCart } from 'lucide-react';
+import { Banknote, ChevronLeft, ChevronRight, Package, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -29,6 +29,10 @@ import {
   warehouseStockLevel,
 } from '../utils/inventoryMetrics';
 import { formatBs, formatNumber } from '../utils/formatBs';
+import { Button } from '../components/ui/Button';
+import { MetricStrip } from '../components/ui/Stat';
+import { Panel } from '../components/ui/Panel';
+import { todayRangeUtc, shortTime } from '../utils/dateRange';
 
 const SIDEBAR_KEY = 'suntek_erp_sidebar_collapsed';
 
@@ -118,7 +122,7 @@ function InventoryListChrome({
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={t('dashboard.inventorySearchPlaceholder')}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
             autoComplete="off"
           />
         </div>
@@ -131,7 +135,7 @@ function InventoryListChrome({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
             >
               {INVENTORY_PAGE_SIZES.map((n) => (
                 <option key={n} value={n}>
@@ -194,6 +198,14 @@ export function InventoryDashboard() {
   const [movementsPage, setMovementsPage] = useState(1);
   const [movementsPageSize, setMovementsPageSize] = useState(25);
   const [movementsLoading, setMovementsLoading] = useState(false);
+  const [itemsError, setItemsError] = useState(false);
+  const [dashboardSummary, setDashboardSummary] = useState<{
+    totalSalesBs: number;
+    totalCount: number;
+    recent: MovementDto[];
+  } | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState(false);
   const [movementFilter, setMovementFilter] = useState<MovementFilterValue>({
     option: 'last30',
     startDate: undefined,
@@ -243,10 +255,11 @@ export function InventoryDashboard() {
 
   const refreshItems = useCallback(() => {
     setLoading(true);
+    setItemsError(false);
     inventoryApi
       .list(inventoryStatusFilter)
       .then((res) => setItems(res.data))
-      .catch(() => setItems([]))
+      .catch(() => setItemsError(true))
       .finally(() => setLoading(false));
   }, [inventoryStatusFilter]);
 
@@ -305,6 +318,28 @@ export function InventoryDashboard() {
   useEffect(() => {
     if (activeNav === 'sales') refreshMovements();
   }, [activeNav, movementFilter, movementsPage, movementsPageSize, refreshMovements]);
+
+  const refreshDashboardSummary = useCallback(() => {
+    setDashboardLoading(true);
+    setDashboardError(false);
+    const { startDate, endDate } = todayRangeUtc();
+    salesApi
+      .listMovements(startDate, endDate, 1, 5)
+      .then((res) => {
+        const d = res.data;
+        setDashboardSummary({
+          totalSalesBs: d.totalSalesBsInRange,
+          totalCount: d.totalCount,
+          recent: d.items,
+        });
+      })
+      .catch(() => setDashboardError(true))
+      .finally(() => setDashboardLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (activeNav === 'dashboard') refreshDashboardSummary();
+  }, [activeNav, refreshDashboardSummary]);
 
   useEffect(() => {
     setOpenMenuKey(null);
@@ -508,45 +543,132 @@ export function InventoryDashboard() {
       />
 
       {activeNav === 'dashboard' && (
-        <div className="mx-auto max-w-7xl space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-lg font-semibold tracking-tight text-slate-900">
               {t('erp.dashboardWelcomeTitle')}
             </h1>
-            <p className="max-w-3xl text-sm leading-relaxed text-slate-600">{t('erp.dashboardWelcomeBody')}</p>
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" onClick={() => setFormOpen(true)}>
+                {t('dashboard.addProduct')}
+              </Button>
+              <Button onClick={() => setSalesModalOpen(true)}>{t('dashboard.recordSale')}</Button>
+            </div>
           </div>
-          <KpiStrip
-            loading={kpiLoading}
-            inventoryValueLabel={kpiProps.inventoryValueLabel}
-            inventoryValueHint={t('erp.kpiInventoryValueHint')}
-            stockHealthLabel={kpiProps.stockHealthLabel}
-            stockHealthHint={t('erp.kpiStockHealthHint')}
-            lowStockCount={kpiProps.lowStockCount}
-            lowStockHint={t('erp.kpiLowStockHint')}
-            lowStockStress={kpiProps.lowStockStress}
-            fourthTitle={kpiProps.fourthTitle}
-            fourthValue={kpiProps.fourthValue}
-            fourthHint={kpiProps.fourthHint}
+
+          <MetricStrip
+            metrics={[
+              {
+                label: t('dashboard.salesToday'),
+                value: formatBs(dashboardSummary?.totalSalesBs ?? 0),
+              },
+              {
+                label: t('dashboard.movementsToday'),
+                value: String(dashboardSummary?.totalCount ?? 0),
+                unit: 'mov',
+              },
+              {
+                label: t('dashboard.lowStock'),
+                value: String(lowStockAlertCount(items)),
+                unit: 'SKUs',
+                tone: lowStockAlertCount(items) > 0 ? 'amber' : 'default',
+              },
+              {
+                label: t('dashboard.inventoryValueApprox'),
+                value: formatBs(estimateInventoryValueBs(items)),
+                fullWidth: true,
+              },
+            ]}
           />
-          <div className="grid gap-4 md:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => navigateNav('warehouse')}
-              className="group flex flex-col rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm ring-1 ring-slate-950/[0.02] transition hover:border-violet-200 hover:shadow-md"
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Panel
+              title={t('dashboard.attentionStock')}
+              action={
+                <button
+                  type="button"
+                  onClick={() => navigateNav('warehouse')}
+                  className="text-xs font-semibold text-brand-600 hover:text-brand-700"
+                >
+                  {t('dashboard.viewInventory')}
+                </button>
+              }
             >
-              <Package className="h-8 w-8 text-violet-600" />
-              <h3 className="mt-4 text-base font-semibold text-slate-900">{t('dashboard.tabWarehouse')}</h3>
-              <p className="mt-1 text-sm text-slate-500">{t('erp.warehouseToolbarHint')}</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigateNav('sales')}
-              className="group flex flex-col rounded-xl border border-slate-200 bg-white p-6 text-left shadow-sm ring-1 ring-slate-950/[0.02] transition hover:border-violet-200 hover:shadow-md"
+              {itemsError ? (
+                <div className="py-6 text-center">
+                  <p className="text-sm text-slate-500">{t('dashboard.loadError')}</p>
+                  <Button variant="secondary" className="mt-3" onClick={refreshItems}>
+                    {t('dashboard.retry')}
+                  </Button>
+                </div>
+              ) : items.filter((p) => warehouseStockLevel(p) !== 'full').length === 0 ? (
+                <p className="py-4 text-sm text-slate-500">{t('dashboard.noStockAttention')}</p>
+              ) : (
+                <ul className="divide-y divide-slate-100">
+                  {items
+                    .filter((p) => warehouseStockLevel(p) !== 'full')
+                    .slice(0, 6)
+                    .map((p) => (
+                      <li key={p.id} className="flex items-center justify-between gap-3 py-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-slate-800">{p.name}</p>
+                          <p className="truncate text-xs text-slate-500">
+                            {p.sku} · {p.wholesaleQuantity} caj · {p.retailQuantity}{' '}
+                            {p.unitType === 'Meters' || p.unitType === 0 ? 'm' : 'un'}
+                          </p>
+                        </div>
+                        <StockBadge level={warehouseStockLevel(p)} labels={badgeLabels} />
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </Panel>
+
+            <Panel
+              title={t('dashboard.recentActivity')}
+              action={
+                <button
+                  type="button"
+                  onClick={() => navigateNav('sales')}
+                  className="text-xs font-semibold text-brand-600 hover:text-brand-700"
+                >
+                  {t('dashboard.viewSales')}
+                </button>
+              }
             >
-              <ShoppingCart className="h-8 w-8 text-violet-600" />
-              <h3 className="mt-4 text-base font-semibold text-slate-900">{t('dashboard.tabMovements')}</h3>
-              <p className="mt-1 text-sm text-slate-500">{t('movements.kpiSalesHint')}</p>
-            </button>
+              {dashboardError ? (
+                <div className="py-6 text-center">
+                  <p className="text-sm text-slate-500">{t('dashboard.loadError')}</p>
+                  <Button variant="secondary" className="mt-3" onClick={refreshDashboardSummary}>
+                    {t('dashboard.retry')}
+                  </Button>
+                </div>
+              ) : dashboardLoading ? (
+                <div className="space-y-3 py-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-4 animate-pulse rounded bg-slate-100" />
+                  ))}
+                </div>
+              ) : !dashboardSummary || dashboardSummary.recent.length === 0 ? (
+                <p className="py-4 text-sm text-slate-500">{t('dashboard.noRecentActivity')}</p>
+              ) : (
+                <ul className="divide-y divide-slate-100">
+                  {dashboardSummary.recent.map((m) => (
+                    <li key={m.id} className="flex items-center justify-between gap-3 py-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm text-slate-700">{m.description}</p>
+                        <p className="text-xs text-slate-500">
+                          {shortTime(m.createdAt)} · {m.productSku}
+                        </p>
+                      </div>
+                      <span className="text-sm font-semibold tabular-nums text-slate-800">
+                        {m.saleTotalBs != null ? formatBs(Number(m.saleTotalBs)) : '—'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
           </div>
         </div>
       )}
@@ -574,7 +696,7 @@ export function InventoryDashboard() {
                 onClick={() => setWarehouseView('warehouse')}
                 className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                   warehouseView === 'warehouse'
-                    ? 'bg-violet-600 text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -585,7 +707,7 @@ export function InventoryDashboard() {
                 onClick={() => setWarehouseView('storefront')}
                 className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                   warehouseView === 'storefront'
-                    ? 'bg-violet-600 text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -597,7 +719,7 @@ export function InventoryDashboard() {
                 onClick={() => setInventoryStatusFilter('active')}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
                   inventoryStatusFilter === 'active'
-                    ? 'bg-violet-100 text-violet-800 ring-1 ring-violet-200'
+                    ? 'bg-brand-100 text-brand-800 ring-1 ring-brand-200'
                     : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -638,7 +760,7 @@ export function InventoryDashboard() {
               <button
                 type="button"
                 onClick={() => setFormOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
               >
                 <Plus className="h-4 w-4" />
                 {t('dashboard.addProduct')}
@@ -682,7 +804,8 @@ export function InventoryDashboard() {
                   {t('dashboard.inventoryNoMatches')}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <>
+                <div className="hidden overflow-x-auto md:block">
                   <table className="min-w-full border-collapse text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 bg-slate-50/90 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -731,6 +854,54 @@ export function InventoryDashboard() {
                     </tbody>
                   </table>
                 </div>
+                <ul className="divide-y divide-slate-100 md:hidden">
+                  {inventoryPaged.map((item) => {
+                    const total = item.wholesaleQuantity * item.rollsPerBox;
+                    const wLevel = warehouseStockLevel(item);
+                    const key = `w-${item.id}`;
+                    return (
+                      <li key={item.id} className="px-4 py-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-slate-800">{item.name}</p>
+                            <p className="font-mono text-xs text-slate-500">{item.sku}</p>
+                          </div>
+                          <StockBadge level={wLevel} labels={badgeLabels} />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between gap-3">
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                            <span>
+                              <span className="font-semibold text-slate-700">{item.wholesaleQuantity}</span>{' '}
+                              {t('dashboard.boxes')}
+                            </span>
+                            <span>
+                              <span className="font-semibold text-slate-700">{item.rollsPerBox}</span>{' '}
+                              {t('dashboard.rollsPerBox')}
+                            </span>
+                            <span>
+                              <span className="font-semibold text-slate-700">{total}</span>{' '}
+                              {t('dashboard.totalStock')}
+                            </span>
+                          </div>
+                          <WarehouseRowActionsDropdown
+                            open={openMenuKey === key}
+                            onOpenChange={(open) => setOpenMenuKey(open ? key : null)}
+                            onEdit={() => setEditProductItem(item)}
+                            onAddStock={() => setAddStockItem(item)}
+                            onOpenBox={() => handleOpenBoxClick(item.id)}
+                            onDiscontinue={() => handleDiscontinueClick(item.id)}
+                            discontinueDisabled={inventoryStatusFilter !== 'active' || !isAdmin}
+                            onArchive={() => handleArchiveClick(item.id)}
+                            archiveDisabled={inventoryStatusFilter === 'archived' || !isAdmin}
+                            openBoxDisabled={item.wholesaleQuantity < 1 || openBoxLoading}
+                            labels={rowActionLabels}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                </>
               )}
             </InventoryListChrome>
           ) : (
@@ -749,7 +920,8 @@ export function InventoryDashboard() {
                   {t('dashboard.inventoryNoMatches')}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <>
+                <div className="hidden overflow-x-auto md:block">
                   <table className="min-w-full border-collapse text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 bg-slate-50/90 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -809,6 +981,54 @@ export function InventoryDashboard() {
                     </tbody>
                   </table>
                 </div>
+                <ul className="divide-y divide-slate-100 md:hidden">
+                  {inventoryPaged.map((item) => {
+                    const sLevel = storefrontStockLevel(item);
+                    const key = `s-${item.id}`;
+                    return (
+                      <li key={item.id} className="px-4 py-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-slate-800">{item.name}</p>
+                            <p className="font-mono text-xs text-slate-500">{item.sku}</p>
+                          </div>
+                          <StockBadge level={sLevel} labels={badgeLabels} />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between gap-3">
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                            <span>
+                              <span className="font-semibold text-slate-700">
+                                {formatRetailQuantity(
+                                  item,
+                                  t('inventory.unitMt'),
+                                  t('inventory.unitUnits')
+                                )}
+                              </span>
+                            </span>
+                            <span>rollo {formatBs(item.pricePerRoll)}</span>
+                            <span>m {formatBs(item.pricePerMeter)}</span>
+                          </div>
+                          <StorefrontRowActionsDropdown
+                            open={openMenuKey === key}
+                            onOpenChange={(open) => setOpenMenuKey(open ? key : null)}
+                            onEdit={() => setEditProductItem(item)}
+                            onDiscontinue={() => handleDiscontinueClick(item.id)}
+                            discontinueDisabled={inventoryStatusFilter !== 'active' || !isAdmin}
+                            onArchive={() => handleArchiveClick(item.id)}
+                            archiveDisabled={inventoryStatusFilter === 'archived' || !isAdmin}
+                            labels={{
+                              more: rowActionLabels.more,
+                              edit: rowActionLabels.edit,
+                              discontinue: rowActionLabels.discontinue,
+                              archive: rowActionLabels.archive,
+                            }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                </>
               )}
             </InventoryListChrome>
           )}
@@ -817,19 +1037,6 @@ export function InventoryDashboard() {
 
       {activeNav === 'sales' && (
         <div className="mx-auto max-w-7xl space-y-6">
-          <KpiStrip
-            loading={kpiLoading}
-            inventoryValueLabel={kpiProps.inventoryValueLabel}
-            inventoryValueHint={t('erp.kpiInventoryValueHint')}
-            stockHealthLabel={kpiProps.stockHealthLabel}
-            stockHealthHint={t('erp.kpiStockHealthHint')}
-            lowStockCount={kpiProps.lowStockCount}
-            lowStockHint={t('erp.kpiLowStockHint')}
-            lowStockStress={kpiProps.lowStockStress}
-            fourthTitle={kpiProps.fourthTitle}
-            fourthValue={kpiProps.fourthValue}
-            fourthHint={kpiProps.fourthHint}
-          />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"

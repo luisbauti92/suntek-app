@@ -31,9 +31,10 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
             key={code}
             type="button"
             onClick={() => setLocale(code)}
+            aria-pressed={locale === code}
             className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
               locale === code
-                ? 'bg-white text-violet-700 shadow-sm'
+                ? 'bg-white text-brand-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >

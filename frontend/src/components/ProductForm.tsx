@@ -126,7 +126,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 value={form.sku}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder={t('productForm.skuPlaceholder')}
               />
             </div>
@@ -141,7 +141,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 value={form.name}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder={t('productForm.namePlaceholder')}
               />
             </div>
@@ -160,7 +160,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
               value={form.quantity || ''}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
               placeholder="0"
             />
           </div>
@@ -184,7 +184,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                     setForm((prev) => ({ ...prev, length: roundMoney2(Number(prev.length)) }))
                   }
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="0"
                 />
               </div>
@@ -205,7 +205,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                     setForm((prev) => ({ ...prev, width: roundMoney2(Number(prev.width)) }))
                   }
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="0"
                 />
               </div>
@@ -226,7 +226,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 value={form.rollsPerBox || ''}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder="1"
               />
             </div>
@@ -242,7 +242,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                   setForm((prev) => ({ ...prev, unitType: e.target.value as UnitType }));
                   setError('');
                 }}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
               >
                 <option value="Meters">{t('productForm.unitMeters')}</option>
                 <option value="Units">{t('productForm.unitUnits')}</option>
@@ -271,7 +271,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                   }))
                 }
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder="0.00"
               />
             </div>
@@ -296,7 +296,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                     }))
                   }
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="0.00"
                 />
               </div>
@@ -325,7 +325,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                   type="text"
                   value={manufacturer}
                   onChange={(e) => setManufacturer(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder={t('productForm.manufacturerPlaceholder')}
                 />
               </div>
@@ -349,7 +349,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                     const v = parseFloat(manufacturerPriceUsd);
                     if (!Number.isNaN(v)) setManufacturerPriceUsd(String(roundMoney2(v)));
                   }}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder={t('productForm.manufacturerPricePlaceholder')}
                 />
                 <p className="mt-1 text-xs text-slate-500">{t('productForm.manufacturerPriceHint')}</p>
@@ -368,7 +368,7 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-brand-600 text-white font-medium hover:bg-brand-700 focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:opacity-50 transition"
             >
               {isSubmitting ? t('productForm.registering') : t('productForm.registerProduct')}
             </button>

@@ -59,7 +59,7 @@ export function WarehouseRowActionsDropdown({
         ref={btnRef}
         type="button"
         onClick={() => onOpenChange(!open)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 pointer-coarse:h-11 pointer-coarse:w-11"
         aria-expanded={open}
         aria-haspopup="menu"
         title={labels.more}
@@ -137,7 +137,7 @@ export function WarehouseRowActionsDropdown({
                 onOpenBox();
               }}
             >
-              <Box className="h-4 w-4 text-violet-600" />
+              <Box className="h-4 w-4 text-brand-600" />
               {labels.openBox}
             </button>
           </div>,
@@ -190,7 +190,7 @@ export function StorefrontRowActionsDropdown({
         ref={btnRef}
         type="button"
         onClick={() => onOpenChange(!open)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 pointer-coarse:h-11 pointer-coarse:w-11"
         aria-expanded={open}
         title={labels.more}
       >

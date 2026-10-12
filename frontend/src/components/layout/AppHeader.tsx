@@ -53,7 +53,7 @@ export function AppHeader({
               value={searchValue}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder={searchPlaceholder}
-              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50/80 py-2 pl-9 pr-3 text-sm text-slate-900 shadow-inner placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50/80 py-2 pl-9 pr-3 text-sm text-slate-900 shadow-inner placeholder:text-slate-400 focus:border-brand-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600/20"
               autoComplete="off"
             />
           </>
@@ -74,7 +74,7 @@ export function AppHeader({
             aria-label={t('erp.notifications')}
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-violet-500 ring-2 ring-white" />
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-brand-600 ring-2 ring-white" />
           </button>
           {notifOpen && (
             <div className="absolute right-0 mt-1 w-72 rounded-xl border border-slate-200 bg-white py-3 shadow-lg ring-1 ring-black/5">
@@ -98,7 +98,7 @@ export function AppHeader({
             className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white py-1 pl-1 pr-2 shadow-sm transition hover:bg-slate-50"
             aria-expanded={profileOpen}
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-violet-100 text-violet-700">
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-100 text-brand-700">
               <User className="h-4 w-4" />
             </span>
             <span className="hidden max-w-[140px] truncate text-left text-xs font-medium text-slate-800 sm:block">

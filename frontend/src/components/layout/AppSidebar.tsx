@@ -78,6 +78,7 @@ export function AppSidebar({
               key={id}
               type="button"
               onClick={() => go(id)}
+              aria-current={isActive ? 'page' : undefined}
               title={collapsed ? t(labelKey) : undefined}
               className={[
                 'flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors',
@@ -88,7 +89,7 @@ export function AppSidebar({
               ].join(' ')}
             >
               <Icon
-                className={['h-5 w-5 shrink-0', isActive ? 'text-violet-400' : 'text-zinc-500'].join(' ')}
+                className={['h-5 w-5 shrink-0', isActive ? 'text-brand-200' : 'text-zinc-500'].join(' ')}
                 aria-hidden
               />
               {!collapsed && <span className="truncate">{t(labelKey)}</span>}
