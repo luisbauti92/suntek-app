@@ -206,8 +206,8 @@ Three deliberate, distinct systems. Do not blend them.
 - Canvas `bg-slate-50`; surfaces white cards `rounded-xl border border-slate-200
   bg-white shadow-sm`.
 - Shell: collapsible dark `bg-zinc-950` sidebar, sticky header, KPI strip.
-- Accents: **violet-600** for ERP chrome/primary; **indigo-600** on older auth/form
-  buttons; **emerald** for sales/stock health.
+- Accents: brand blue **`#002D9C`** (`--color-brand-*` ramp) for primary actions, selection
+  and focus; **emerald** for sales/stock health; **amber/red** for warnings and errors.
 - Icons `lucide-react`; toasts `sonner`; skeletons via `animate-pulse`.
 - Feels: a professional internal tool. Optimize for density and speed.
 
@@ -283,13 +283,12 @@ Three deliberate, distinct systems. Do not blend them.
 
 ---
 
-## 13. Open question (unconfirmed — correct me and I will fold it in)
+## 13. Brand blue — resolved (owner-confirmed)
 
-- **Canonical brand blue is unresolved.** Near-neighbours exist across the apps
-  (`#002D9C` in the catalog, `#0038a8` in the POS, and the logo-derived family). Do not
-  assume these are intentional variants — they may simply reflect implementation history.
-  Treat a single canonical SUNTEK brand blue as an open question until the owner confirms
-  one.
+- **Canonical SUNTEK brand blue is `#002D9C`** (azul rey), owner-confirmed via the ERP
+  "Operational Ledger" direction (Oct 2026). It is exposed as the `--color-brand-*` ramp and
+  used for the admin's primary actions, selection and focus. `#0038a8` stays POS-specific;
+  the two are separate by design (each app keeps its own palette — §9.7).
 
 ---
 

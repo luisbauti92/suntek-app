@@ -2,4 +2,12 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* SUNTEK brand blue (#002D9C) ramp — canonical accent (owner-approved). */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #dbe4ff;
+  --color-brand-200: #b9c8ff;
+  --color-brand-600: #002d9c;
+  --color-brand-700: #00247a;
+  --color-brand-800: #001c5e;
 }

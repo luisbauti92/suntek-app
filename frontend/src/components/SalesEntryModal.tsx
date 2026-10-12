@@ -121,7 +121,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                 <button
                   type="button"
                   onClick={() => setProductId('')}
-                  className="text-xs text-indigo-600 hover:text-indigo-700"
+                  className="text-xs text-brand-600 hover:text-brand-700"
                 >
                   {t('salesModal.change')}
                 </button>
@@ -133,7 +133,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('salesModal.searchPlaceholder')}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 />
                 <ul className="mt-1 max-h-40 overflow-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
                   {filteredProducts.slice(0, 10).map((p) => (
@@ -160,7 +160,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
             <select
               value={saleType}
               onChange={(e) => handleSaleTypeChange(e.target.value as SaleType)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             >
               <option value="Wholesale">{t('salesModal.wholesaleOption')}</option>
               <option value="Retail">{t('salesModal.retailOption')}</option>
@@ -179,7 +179,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder={saleType === 'Wholesale' ? '1' : '0'}
               />
             </div>
@@ -197,7 +197,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
                   if (!Number.isNaN(v)) setUnitPrice(String(roundMoney2(v)));
                 }}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder="0.00"
               />
             </div>
@@ -214,7 +214,7 @@ export function SalesEntryModal({ isOpen, onClose, onSuccess, products }: SalesE
             <button
               type="submit"
               disabled={isSubmitting || !productId}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-brand-600 text-white font-medium hover:bg-brand-700 focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:opacity-50 transition"
             >
               {isSubmitting ? t('salesModal.recording') : t('salesModal.recordSale')}
             </button>

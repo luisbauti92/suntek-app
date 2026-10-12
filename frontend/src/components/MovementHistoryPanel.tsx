@@ -1,20 +1,19 @@
 import { Fragment, useMemo } from 'react';
 import { formatBs, formatNumber } from '../utils/formatBs';
 import {
-  AlertTriangle,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
   Download,
-  Layers,
   Loader2,
   Package,
   PackageOpen,
   ShoppingCart,
   Wrench,
 } from 'lucide-react';
+import { MetricStrip } from './ui/Stat';
 import { MovementFilterBar, type MovementFilterValue } from './MovementFilterBar';
 import type { InventoryItemDto, MovementDto } from '../api/client';
+import { lowStockAlertCount } from '../utils/inventoryMetrics';
 import { useLanguage } from '../contexts/LanguageContext';
 
 
@@ -99,7 +98,7 @@ function MovementTypeBadge({ type }: { type: string }) {
   }
   if (n === 'Register') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 ring-1 ring-indigo-200">
+      <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 ring-1 ring-brand-200">
         <Package className="h-3 w-3 shrink-0" aria-hidden />
         {t('movements.badgeRegister')}
       </span>
@@ -178,55 +177,29 @@ export function MovementHistoryPanel({
     movementsTotalCount === 0
       ? 1
       : Math.ceil(movementsTotalCount / movementsPageSize);
-  const lowStockCount = useMemo(
-    () => inventoryItems.filter((i) => i.wholesaleQuantity < 5).length,
-    [inventoryItems]
-  );
+  const lowStockCount = useMemo(() => lowStockAlertCount(inventoryItems), [inventoryItems]);
 
   const grouped = useMemo(() => groupMovementsByLocalDate(movements), [movements]);
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('movements.kpiSales')}
-            </p>
-            <TrendingUp className="h-5 w-5 text-emerald-500" aria-hidden />
-          </div>
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-emerald-600 tabular-nums">
-            {formatBs(Number(totalSalesBs))}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">{t('movements.kpiSalesHint')}</p>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('movements.kpiCount')}
-            </p>
-            <Layers className="h-5 w-5 text-indigo-500" aria-hidden />
-          </div>
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 tabular-nums">
-            {movementCount}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">{t('movements.kpiCountHint')}</p>
-        </div>
-
-        <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-5 shadow-sm ring-1 ring-amber-100">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-amber-800/90">
-              {t('movements.kpiLowStock')}
-            </p>
-            <AlertTriangle className="h-5 w-5 text-amber-600" aria-hidden />
-          </div>
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-amber-900 tabular-nums">
-            {lowStockCount}
-          </p>
-          <p className="mt-1 text-xs text-amber-900/70">{t('movements.kpiLowStockHint')}</p>
-        </div>
-      </div>
+      <MetricStrip
+        cols={3}
+        metrics={[
+          {
+            label: t('movements.kpiSales'),
+            value: formatBs(Number(totalSalesBs)),
+            tone: 'emerald',
+          },
+          { label: t('movements.kpiCount'), value: String(movementCount) },
+          {
+            label: t('movements.kpiLowStock'),
+            value: String(lowStockCount),
+            unit: 'SKUs',
+            tone: lowStockCount > 0 ? 'amber' : 'default',
+          },
+        ]}
+      />
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-100 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -259,7 +232,8 @@ export function MovementHistoryPanel({
             <p className="mt-1 text-sm text-slate-500">{t('movements.emptyHint')}</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="hidden overflow-x-auto md:block">
             <table className="min-w-full divide-y divide-slate-100">
               <thead>
                 <tr className="bg-slate-50/80 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -342,6 +316,49 @@ export function MovementHistoryPanel({
               </tbody>
             </table>
           </div>
+          <ul className="divide-y divide-slate-100 md:hidden">
+            {grouped.map(([dateKey, rows]) => (
+              <Fragment key={dateKey}>
+                <li className="bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700">
+                  {formatGroupTitle(
+                    dateKey,
+                    intlLocale,
+                    t('movements.todayPrefix'),
+                    t('movements.yesterdayPrefix')
+                  )}
+                </li>
+                {rows.map((m) => (
+                  <li key={m.id} className="px-4 py-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs tabular-nums text-slate-500">
+                          {timeFmt.format(new Date(m.createdAt))}
+                        </span>
+                        <MovementTypeBadge type={m.movementType} />
+                      </div>
+                      <span className="text-sm font-semibold tabular-nums text-slate-800">
+                        {normalizeMovementType(m.movementType) === 'Sale' && m.saleTotalBs != null
+                          ? formatBs(Number(m.saleTotalBs))
+                          : '—'}
+                      </span>
+                    </div>
+                    <p className="mt-1 truncate text-sm font-medium text-slate-800">{m.productName}</p>
+                    <p className="mt-0.5 text-xs text-slate-500">{m.description}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {m.wholesaleQuantityAfter != null && (
+                        <span className="mr-2">
+                          {m.wholesaleQuantityAfter} {t('movements.boxesSuffix')}
+                        </span>
+                      )}
+                      {m.retailQuantityAfter != null &&
+                        formatRetailAfter(m, t('movements.unitMt'), t('movements.unitUnits'))}
+                    </p>
+                  </li>
+                ))}
+              </Fragment>
+            ))}
+          </ul>
+          </>
         )}
 
         {!movementsLoading && movementsTotalCount > 0 && (
@@ -351,7 +368,7 @@ export function MovementHistoryPanel({
               <select
                 value={movementsPageSize}
                 onChange={(e) => onMovementsPageSizeChange(Number(e.target.value))}
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
               >
                 {PAGE_SIZE_OPTIONS.map((n) => (
                   <option key={n} value={n}>

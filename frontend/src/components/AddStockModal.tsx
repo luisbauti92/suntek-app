@@ -86,7 +86,7 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
               placeholder="1"
             />
           </div>
@@ -100,7 +100,7 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
               placeholder={t('addStock.reasonPlaceholder')}
             />
           </div>
@@ -117,7 +117,7 @@ export function AddStockModal({ isOpen, onClose, onSuccess, item }: AddStockModa
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-brand-600 text-white font-medium hover:bg-brand-700 focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:opacity-50 transition"
             >
               {isSubmitting ? t('addStock.updating') : t('common.confirm')}
             </button>
