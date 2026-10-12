@@ -50,8 +50,8 @@ export function KpiStrip(props: KpiStripProps) {
       title: t('erp.kpiInventoryValue'),
       value: props.inventoryValueLabel,
       hint: props.inventoryValueHint,
-      accent: 'text-violet-600',
-      bg: 'bg-violet-50',
+      accent: 'text-brand-600',
+      bg: 'bg-brand-50',
     },
     {
       icon: Activity,

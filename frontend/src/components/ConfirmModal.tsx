@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface ConfirmModalProps {
@@ -25,20 +26,37 @@ export function ConfirmModal({
   const resolvedTitle = title ?? t('common.confirm');
   const resolvedConfirm = confirmLabel ?? t('common.confirm');
   const resolvedCancel = cancelLabel ?? t('common.cancel');
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    cancelRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+    >
       <div className="w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">{resolvedTitle}</h2>
+          <h2 id="confirm-title" className="text-lg font-semibold text-slate-900">{resolvedTitle}</h2>
         </div>
         <div className="px-6 py-4">
           <p className="text-slate-600">{message}</p>
         </div>
         <div className="px-6 py-4 flex gap-3 justify-end bg-slate-50 border-t border-slate-200">
           <button
+            ref={cancelRef}
             type="button"
             onClick={onClose}
             disabled={isLoading}
@@ -50,7 +68,7 @@ export function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
+            className="px-4 py-2 rounded-lg bg-brand-600 text-white font-medium hover:bg-brand-700 focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:opacity-50 transition"
           >
             {isLoading ? t('common.pleaseWait') : resolvedConfirm}
           </button>

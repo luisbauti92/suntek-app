@@ -73,7 +73,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
               placeholder={t('erp.fullNamePlaceholder')}
             />
           </div>
@@ -88,7 +88,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="off"
-              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
             />
           </div>
           <div>
@@ -102,7 +102,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
             />
             <p className="mt-1 text-xs text-slate-400">{t('erp.passwordPolicyHint')}</p>
           </div>
@@ -114,7 +114,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
               id="nu-role"
               value={role}
               onChange={(e) => setRole(e.target.value as 'Operator' | 'Admin')}
-              className="mt-1.5 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="mt-1.5 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
             >
               <option value="Operator">{t('erp.roleWarehouse')}</option>
               <option value="Admin">{t('erp.roleAdmin')}</option>
@@ -133,7 +133,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('erp.addUserSubmit')}

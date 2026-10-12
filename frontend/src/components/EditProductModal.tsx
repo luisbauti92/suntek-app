@@ -161,7 +161,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                 value={sku}
                 onChange={(e) => setSku(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder={t('productForm.skuPlaceholder')}
               />
             </div>
@@ -175,7 +175,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder={t('productForm.namePlaceholder')}
               />
             </div>
@@ -200,7 +200,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                     if (!Number.isNaN(v)) setLength(String(roundMoney2(v)));
                   }}
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="0"
                 />
               </div>
@@ -223,7 +223,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                     if (!Number.isNaN(v)) setWidth(String(roundMoney2(v)));
                   }}
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="0"
                 />
               </div>
@@ -244,7 +244,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                 value={rollsPerBox}
                 onChange={(e) => setRollsPerBox(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder="1"
               />
             </div>
@@ -268,7 +268,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                   if (!Number.isNaN(v)) setPricePerRoll(String(roundMoney2(v)));
                 }}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                 placeholder="0.00"
               />
             </div>
@@ -290,7 +290,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                     if (!Number.isNaN(v)) setPricePerMeter(String(roundMoney2(v)));
                   }}
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="0.00"
                 />
               </div>
@@ -318,7 +318,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                   type="text"
                   value={manufacturer}
                   onChange={(e) => setManufacturer(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder={t('productForm.manufacturerPlaceholder')}
                 />
               </div>
@@ -341,7 +341,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                     const v = parseFloat(manufacturerPriceUsd);
                     if (!Number.isNaN(v)) setManufacturerPriceUsd(String(roundMoney2(v)));
                   }}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder={t('productForm.manufacturerPricePlaceholder')}
                 />
                 <p className="mt-1 text-xs text-slate-500">{t('productForm.manufacturerPriceHint')}</p>
@@ -362,7 +362,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-brand-600 text-white font-medium hover:bg-brand-700 focus:ring-2 focus:ring-brand-600 focus:ring-offset-2 disabled:opacity-50 transition"
             >
               {isSubmitting ? t('editProduct.saving') : t('editProduct.save')}
             </button>

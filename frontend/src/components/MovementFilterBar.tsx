@@ -78,7 +78,7 @@ export function MovementFilterBar({ value, onChange, embedded = false }: Movemen
   const pillBase = 'px-3 py-1.5 rounded-full text-xs font-medium border transition';
   const pillInactive =
     'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50';
-  const pillActive = 'bg-indigo-600 text-white border-indigo-600 shadow-sm';
+  const pillActive = 'bg-brand-600 text-white border-brand-600 shadow-sm';
 
   const wrapperClass = embedded
     ? 'flex flex-wrap items-center gap-3'
