@@ -858,7 +858,7 @@ export function InventoryDashboard() {
                   {inventoryPaged.map((item) => {
                     const total = item.wholesaleQuantity * item.rollsPerBox;
                     const wLevel = warehouseStockLevel(item);
-                    const key = `w-${item.id}`;
+                    const key = `wm-${item.id}`;
                     return (
                       <li key={item.id} className="px-4 py-3">
                         <div className="flex items-start justify-between gap-3">
@@ -984,7 +984,7 @@ export function InventoryDashboard() {
                 <ul className="divide-y divide-slate-100 md:hidden">
                   {inventoryPaged.map((item) => {
                     const sLevel = storefrontStockLevel(item);
-                    const key = `s-${item.id}`;
+                    const key = `sm-${item.id}`;
                     return (
                       <li key={item.id} className="px-4 py-3">
                         <div className="flex items-start justify-between gap-3">
