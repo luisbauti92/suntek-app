@@ -9,7 +9,7 @@
 .language-select select { height:42px; border:1px solid var(--border); border-radius:7px; background:#fff; color:#102448; padding:0 10px; font-size:12px; font-weight:600; }
 .header-whatsapp { display:flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:0 17px; border-radius:7px; color:#fff; background:var(--primary); font-weight:600; font-size:13px; white-space:nowrap; } .header-whatsapp:hover,.product-card a:hover { background:var(--primary-hover); }
 .mobile-menu,.mobile-navigation,.mobile-search { display:none; }
-.catalog-hero { position:relative; min-height:276px; overflow:hidden; border-radius:9px; background:#03172e url(/editorial/hero.png) center center / cover no-repeat; padding:27px 40px 20px; color:white; isolation:isolate; }
+.catalog-hero { position:relative; min-height:276px; overflow:hidden; border-radius:9px; background:#03172e url(/editorial/hero.webp) center center / cover no-repeat; padding:27px 40px 20px; color:white; isolation:isolate; }
 .catalog-hero::before { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,rgba(0,9,28,.36),transparent 66%); }
 .hero-copy h1 { margin:0; max-width:530px; font-size:42px; font-weight:750; line-height:1.04; letter-spacing:-1.2px; color:#fff; }
 .hero-copy > p { font-size:17px; line-height:1.4; max-width:485px; margin:12px 0 0; color:#f4f7ff; }
