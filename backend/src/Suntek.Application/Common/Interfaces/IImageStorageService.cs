@@ -14,4 +14,9 @@ public interface IImageStorageService
     string BuildPublicUrl(string objectKey);
     Task PutAsync(string objectKey, Stream content, string contentType, CancellationToken ct = default);
     Task DeleteAsync(string objectKey, CancellationToken ct = default);
+    /// <summary>
+    /// Read-only reachability probe used by the health endpoint. Must never throw: failures are
+    /// reported as a status, so a diagnostic call cannot 500.
+    /// </summary>
+    Task<ImageStorageProbeResult> ProbeAsync(CancellationToken ct = default);
 }
