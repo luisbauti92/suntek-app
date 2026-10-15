@@ -1,1 +1,1 @@
-export type ErpNavId = 'dashboard' | 'warehouse' | 'sales' | 'users' | 'settings';
+export type ErpNavId = 'dashboard' | 'warehouse' | 'catalog' | 'sales' | 'users' | 'settings';
