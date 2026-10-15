@@ -14,4 +14,5 @@ public record RegisterStockCommand(
     decimal PricePerMeter,
     int RollsPerBox,
     UnitType UnitType,
+    CatalogCategory? Category = null,
     ManufacturerInfo? Manufacturer = null) : IRequest<ProductDto>;

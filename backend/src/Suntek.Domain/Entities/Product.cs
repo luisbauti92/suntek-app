@@ -14,6 +14,11 @@ public class Product
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    /// <summary>
+    /// Categoría comercial para el catálogo público. Nula en productos legacy: en ese caso
+    /// el catálogo la infiere del tipo de unidad/SKU en vez de leer una clasificación explícita.
+    /// </summary>
+    public CatalogCategory? Category { get; set; }
     /// <summary>Fabricante o proveedor. Dato de compra: no se publica en el catálogo.</summary>
     public string? Manufacturer { get; set; }
     /// <summary>

@@ -12,7 +12,9 @@ public class GetPublicCatalogProductsQueryHandler(IProductRepository productRepo
         GetPublicCatalogProductsQuery request,
         CancellationToken ct)
     {
-        var products = await productRepository.GetAllAsync(ct: ct);
+        // El catálogo público solo expone productos activos. Discontinued y Archived quedan
+        // fuera; el filtro global (Status != Archived) se mantiene en el DbContext.
+        var products = await productRepository.GetAllAsync(ProductStatus.Active, ct);
         return products.Select(Map).ToList();
     }
 
@@ -32,7 +34,7 @@ public class GetPublicCatalogProductsQueryHandler(IProductRepository productRepo
             p.RollsPerBox,
             p.WholesaleQuantity,
             p.RetailQuantity,
-            InferCategory(p),
+            ResolveCategory(p),
             "SUNTEK",
             MilThickness: null,
             UvProtection: null,
@@ -40,8 +42,19 @@ public class GetPublicCatalogProductsQueryHandler(IProductRepository productRepo
     }
 
     /// <summary>
-    /// La entidad <see cref="Product"/> no tiene categoría de catálogo; se infiere hasta exista columna/API.
+    /// Una categoría explícita manda. Para productos legacy (Category nula) se mantiene la
+    /// inferencia por tipo de unidad/SKU.
     /// </summary>
+    private static string ResolveCategory(Product p) => p.Category switch
+    {
+        CatalogCategory.Films => "films",
+        CatalogCategory.Tools => "tools",
+        CatalogCategory.Accessories => "accessories",
+        CatalogCategory.Materials => "materials",
+        _ => InferCategory(p)
+    };
+
+    /// <summary>Heurística legacy para productos sin categoría explícita.</summary>
     private static string InferCategory(Product p)
     {
         if (p.UnitType == UnitType.Meters)

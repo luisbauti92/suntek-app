@@ -113,6 +113,12 @@ export const usersApi = {
 export type UnitType = 'Meters' | 'Units';
 /** API may return 0/1 until JsonStringEnumConverter is enabled */
 export type UnitTypeResponse = UnitType | 0 | 1;
+export type CatalogCategory = 'Films' | 'Tools' | 'Accessories' | 'Materials';
+/**
+ * En un update, omitir `category` (o mandarlo null) deja la categoría como estaba. Para
+ * cambiarla —incluida volver a automática— se manda una instancia; `value: null` = automática.
+ */
+export type CatalogCategoryUpdate = { value: CatalogCategory | null };
 export type ProductStatus = 'Active' | 'Discontinued' | 'Archived';
 export type InventoryStatusFilter = 'active' | 'discontinued' | 'archived';
 
@@ -127,6 +133,7 @@ export interface InventoryItemDto {
   pricePerMeter: number;
   rollsPerBox: number;
   unitType: UnitTypeResponse;
+  category: CatalogCategory | null;
   manufacturer: string | null;
   /**
    * Precio referencial del fabricante, en dólares. Es dato de costo y sólo lo devuelve la API
@@ -149,6 +156,7 @@ export interface RegisterStockRequest {
   pricePerMeter: number;
   rollsPerBox: number;
   unitType: UnitType;
+  category?: CatalogCategory | null;
   manufacturer?: string | null;
   /** En dólares. Se omite para un operador: la API lo ignora si no es Admin. */
   manufacturerPriceUsd?: number | null;
@@ -162,6 +170,7 @@ export interface UpdateProductRequest {
   rollsPerBox: number;
   pricePerRoll: number;
   pricePerMeter: number;
+  category?: CatalogCategoryUpdate | null;
   /** Omitirlo deja el dato como estaba. */
   manufacturer?: string | null;
   manufacturerPriceUsd?: number | null;

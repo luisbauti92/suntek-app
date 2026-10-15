@@ -10,11 +10,19 @@ const es = {
   nav: {
     searchShort: 'Buscar',
     searchLabel: 'Buscar en el catálogo',
-    searchPlaceholder: 'Nombre o código (SKU)',
+    searchPlaceholder: 'Buscar por nombre o SKU…',
+    menu: 'Abrir navegación', navigation: 'Navegación principal', contact: 'Contacto', skip: 'Ir a productos',
     whatsapp: 'Escribir por WhatsApp',
   },
+  hero: {
+    titleLine1:'Vinilos y láminas', titleLine2:'para cada proyecto',
+    description:'Materiales para arquitectura, rotulación, seguridad y diseño. Consultá disponibilidad y precio final por WhatsApp.',
+    noteLine1:'Ideas que', noteLine2:'se transforman', noteLine3:'en espacios únicos',
+    rollTitle:'Venta por rollo', rollBody:'Vinilos y láminas', priceTitle:'Precios en bolivianos', contactBody:'Disponibilidad y cotizaciones',
+  },
+  categoryDescriptions:{films:'Vinilos y láminas en rollo',tools:'Herramientas y utensilios',accessories:'Accesorios y repuestos',materials:'Planchas acrílicas, foam y lonas'},
   intro: {
-    title: 'Vinilos y películas por rollo',
+    title: 'Vinilos y láminas por rollo',
     subtitle:
       'Elegí el material y consultá disponibilidad y precio final por WhatsApp.',
     note: 'Precios referenciales en bolivianos (BOB).',
@@ -26,11 +34,12 @@ const es = {
     resultsFiltered: 'de {{total}}',
   },
   categories: {
-    title: 'Materiales',
+    title: 'Categorías', browse:'Explorar por categoría', explore:'Explorar',
     all: 'Todos',
-    films: 'Películas',
+    films: 'Vinilos y láminas',
     tools: 'Herramientas',
     accessories: 'Accesorios',
+    materials: 'Materiales',
   },
   listing: {
     title: 'Productos',
@@ -62,7 +71,8 @@ const es = {
     roll: 'Rollo',
     meter: 'Metro',
     mediaAlt: '{{name}} (SKU {{sku}})',
-    cta: 'Consultar disponibilidad',
+    cta: 'Consultar por WhatsApp',
+    photoMissing: 'Imagen próximamente',
   },
   state: {
     loading: 'Cargando catálogo…',
@@ -72,7 +82,7 @@ const es = {
     error: 'No se pudo cargar el catálogo. Intentá de nuevo más tarde.',
   },
   footer: {
-    tagline: 'Importadora SUNTEK · Películas y herramientas',
+    tagline: 'Importadora SUNTEK · Vinilos, láminas y herramientas',
     rights: '© {{year}} Importadora SUNTEK',
     contact: 'Consultas por WhatsApp',
   },
@@ -92,11 +102,19 @@ const en: Messages = {
   nav: {
     searchShort: 'Search',
     searchLabel: 'Search the catalog',
-    searchPlaceholder: 'Name or code (SKU)',
+    searchPlaceholder: 'Search by name or SKU…',
+    menu: 'Open navigation', navigation: 'Main navigation', contact: 'Contact', skip: 'Skip to products',
     whatsapp: 'Message us on WhatsApp',
   },
+  hero: {
+    titleLine1:'Vinyl and films', titleLine2:'for every project',
+    description:'Materials for architecture, signage, safety and design. Ask about availability and final pricing on WhatsApp.',
+    noteLine1:'Ideas transformed', noteLine2:'into unique', noteLine3:'spaces',
+    rollTitle:'Sold by the roll', rollBody:'Vinyl and films', priceTitle:'Prices in bolivianos', contactBody:'Availability and quotations',
+  },
+  categoryDescriptions:{films:'Vinyl and film rolls',tools:'Tools and utensils',accessories:'Accessories and replacements',materials:'Acrylic sheets, foam and tarpaulins'},
   intro: {
-    title: 'Window film and vinyl by the roll',
+    title: 'Vinyl and films by the roll',
     subtitle: 'Pick the material and ask about availability and final price on WhatsApp.',
     note: 'Reference prices in bolivianos (BOB).',
   },
@@ -107,11 +125,12 @@ const en: Messages = {
     resultsFiltered: 'of {{total}}',
   },
   categories: {
-    title: 'Materials',
+    title: 'Categories', browse:'Browse categories', explore:'Explore',
     all: 'All',
-    films: 'Films',
+    films: 'Vinyl & Films',
     tools: 'Tools',
     accessories: 'Accessories',
+    materials: 'Materials',
   },
   listing: {
     title: 'Products',
@@ -143,7 +162,8 @@ const en: Messages = {
     roll: 'Roll',
     meter: 'Meter',
     mediaAlt: '{{name}} (SKU {{sku}})',
-    cta: 'Ask about availability',
+    cta: 'Ask on WhatsApp',
+    photoMissing: 'Photo coming soon',
   },
   state: {
     loading: 'Loading catalog…',
@@ -153,7 +173,7 @@ const en: Messages = {
     error: 'The catalog could not be loaded. Please try again later.',
   },
   footer: {
-    tagline: 'SUNTEK Importers · Films and tools',
+    tagline: 'SUNTEK · Vinyl, Films & Tools',
     rights: '© {{year}} SUNTEK Importers',
     contact: 'Questions on WhatsApp',
   },

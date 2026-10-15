@@ -51,6 +51,8 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
         product.RollsPerBox = rollsPerBox;
         product.PricePerRoll = priceRoll;
         product.PricePerMeter = priceMeter;
+        if (request.Category is { } categoryUpdate)
+            product.Category = categoryUpdate.Value;
         if (request.Manufacturer is { } m)
         {
             product.Manufacturer = string.IsNullOrWhiteSpace(m.Name) ? null : m.Name.Trim();
@@ -76,7 +78,8 @@ public class UpdateProductCommandHandler(IProductRepository productRepository)
             product.WholesaleQuantity,
             product.RetailQuantity,
             product.Status,
-            product.CreatedAt);
+            product.CreatedAt,
+            product.Category);
 
         return new UpdateProductResult(dto, null);
     }

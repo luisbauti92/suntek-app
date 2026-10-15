@@ -16,6 +16,8 @@ public class RegisterStockRequest
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    /// <summary>Categoría comercial para el catálogo. Nula = inferir automáticamente.</summary>
+    public CatalogCategory? Category { get; set; }
     /// <summary>Fabricante o proveedor.</summary>
     public string? Manufacturer { get; set; }
     /// <summary>Precio referencial del fabricante en dólares. Sólo un Admin puede leerlo o escribirlo.</summary>
@@ -34,6 +36,7 @@ public class RegisterStockResponse
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    public CatalogCategory? Category { get; set; }
     public string? Manufacturer { get; set; }
     public decimal? ManufacturerPriceUsd { get; set; }
     public int WholesaleQuantity { get; set; }
@@ -54,7 +57,8 @@ public class RegisterStockEndpoint(IMediator mediator) : Endpoint<RegisterStockR
     {
         var result = await mediator.Send(new RegisterStockCommand(
             req.Sku, req.Name, req.Quantity, req.Length, req.Width, req.PricePerRoll, req.PricePerMeter,
-            req.RollsPerBox, req.UnitType, ProductCost.ManufacturerFrom(User, req.Manufacturer, req.ManufacturerPriceUsd)), ct);
+            req.RollsPerBox, req.UnitType, req.Category,
+            ProductCost.ManufacturerFrom(User, req.Manufacturer, req.ManufacturerPriceUsd)), ct);
         Response = new RegisterStockResponse
         {
             Id = result.Id,
@@ -67,6 +71,7 @@ public class RegisterStockEndpoint(IMediator mediator) : Endpoint<RegisterStockR
             PricePerMeter = result.PricePerMeter,
             RollsPerBox = result.RollsPerBox,
             UnitType = result.UnitType,
+            Category = result.Category,
             Manufacturer = result.Manufacturer,
             ManufacturerPriceUsd = ProductCost.VisiblePrice(User, result.ManufacturerPriceUsd),
             WholesaleQuantity = result.WholesaleQuantity,

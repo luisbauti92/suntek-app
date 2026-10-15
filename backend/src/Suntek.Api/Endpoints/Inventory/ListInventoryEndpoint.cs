@@ -17,6 +17,7 @@ public class ProductDto
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    public CatalogCategory? Category { get; set; }
     public string? Manufacturer { get; set; }
     /// <summary>Sólo llega con valor si quien consulta es Admin.</summary>
     public decimal? ManufacturerPriceUsd { get; set; }
@@ -70,6 +71,7 @@ public class ListInventoryEndpoint(IMediator mediator) : Endpoint<ListInventoryR
                 PricePerMeter = p.PricePerMeter,
                 RollsPerBox = p.RollsPerBox,
                 UnitType = p.UnitType,
+                Category = p.Category,
                 Manufacturer = p.Manufacturer,
                 ManufacturerPriceUsd = ProductCost.VisiblePrice(User, p.ManufacturerPriceUsd),
                 WholesaleQuantity = p.WholesaleQuantity,

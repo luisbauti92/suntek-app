@@ -1,55 +1,33 @@
-import { MessageCircle, Search } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { Menu } from 'lucide-react';
 import { useLanguage } from '../contexts/useLanguage';
 import { buildWhatsAppUrl } from '../utils/whatsapp';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { WhatsAppIcon } from './WhatsAppIcon';
 import logo from '../assets/logo.svg';
-
-interface NavbarProps {
-  /** Compact search affordance, shown once the page has scrolled past the real search field. */
-  showSearchShortcut: boolean;
-  onSearchShortcut: () => void;
-}
-
-export function Navbar({ showSearchShortcut, onSearchShortcut }: NavbarProps) {
+interface NavbarProps { search: ReactNode; }
+export function Navbar({ search }: NavbarProps) {
   const { t } = useLanguage();
-  const whatsappUrl = buildWhatsAppUrl(t('whatsapp.generalMessage'));
-
-  return (
-    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface)]">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-1.5">
-        <a
-          href="/"
-          className="inline-flex min-h-11 items-center gap-2 rounded text-xl font-black uppercase tracking-tight text-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
-        >
-          <img src={logo} alt="" aria-hidden className="h-6 w-6" />
-          SUNTEK
-        </a>
-
-        <div className="flex items-center gap-2">
-          {showSearchShortcut && (
-            <button
-              type="button"
-              onClick={onSearchShortcut}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-[var(--border)] px-3 text-sm font-semibold text-[var(--text-strong)] transition hover:bg-[var(--surface-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
-            >
-              <Search className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="sr-only sm:not-sr-only">{t('nav.searchShort')}</span>
-            </button>
-          )}
-
-          <LanguageSwitcher />
-
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] sm:px-4"
-          >
-            <MessageCircle className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="sr-only sm:not-sr-only">{t('nav.whatsapp')}</span>
-          </a>
-        </div>
-      </div>
-    </header>
-  );
+  const [menuOpen, setMenuOpen] = useState(false);
+  const waUrl = buildWhatsAppUrl(t('whatsapp.generalMessage'));
+  return <header className="catalog-header">
+    <button type="button" className="mobile-menu" aria-label={t('nav.menu')} aria-expanded={menuOpen}
+      aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}><Menu size={20} aria-hidden /></button>
+    <a href="#" className="brand"><img src={logo} alt="" />SUNTEK</a>
+    <nav className="desktop-nav" aria-label={t('nav.navigation')}>
+      <a href="#catalog">{t('listing.title')}</a><a href="#materials">{t('categories.title')}</a>
+      <a href={waUrl} target="_blank" rel="noopener noreferrer">{t('nav.contact')}</a>
+    </nav>
+    <div className="header-search">{search}</div>
+    <div className="header-language"><LanguageSwitcher /></div>
+    <a className="header-whatsapp" href={waUrl} aria-label={t('nav.whatsapp')} target="_blank" rel="noopener noreferrer">
+      <WhatsAppIcon /><span className="wa-label">{t('nav.whatsapp')}</span>
+    </a>
+    {menuOpen && <nav id="mobile-navigation" className="mobile-navigation" aria-label={t('nav.navigation')}
+      onKeyDown={event => { if (event.key === 'Escape') setMenuOpen(false); }}>
+      <a href="#catalog" onClick={() => setMenuOpen(false)}>{t('listing.title')}</a>
+      <a href="#materials" onClick={() => setMenuOpen(false)}>{t('categories.title')}</a>
+      <LanguageSwitcher />
+    </nav>}
+  </header>;
 }

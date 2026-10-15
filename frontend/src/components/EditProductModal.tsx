@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { inventoryApi } from '../api/client';
-import type { InventoryItemDto } from '../api/client';
+import type { CatalogCategory, InventoryItemDto } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { formatBs } from '../utils/formatBs';
@@ -42,6 +42,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
   const [rollsPerBox, setRollsPerBox] = useState('');
   const [pricePerRoll, setPricePerRoll] = useState('');
   const [pricePerMeter, setPricePerMeter] = useState('');
+  const [category, setCategory] = useState<CatalogCategory | ''>('');
   const [manufacturer, setManufacturer] = useState('');
   const [manufacturerPriceUsd, setManufacturerPriceUsd] = useState('');
   const [error, setError] = useState('');
@@ -63,6 +64,7 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
     setRollsPerBox(String(item.rollsPerBox));
     setPricePerRoll(String(roundMoney2(item.pricePerRoll)));
     setPricePerMeter(String(roundMoney2(item.pricePerMeter)));
+    setCategory(item.category ?? '');
     setManufacturer(item.manufacturer ?? '');
     setManufacturerPriceUsd(
       item.manufacturerPriceUsd == null ? '' : String(roundMoney2(item.manufacturerPriceUsd))
@@ -116,6 +118,8 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
         rollsPerBox: rpb,
         pricePerRoll: roll,
         pricePerMeter: meter,
+        // Siempre se manda la categoría (con la que tenía cargada). '' = automática (value null).
+        category: { value: category === '' ? null : category },
         // Un operador no ve estos campos: se omiten para que la API deje el dato como estaba
         // en vez de interpretar la ausencia como un borrado.
         ...(isAdmin
@@ -248,6 +252,24 @@ export function EditProductModal({ item, isOpen, onClose, onSuccess }: EditProdu
                 placeholder="1"
               />
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="edit-category" className="block text-sm font-medium text-slate-700 mb-1">
+              {t('productForm.category')}
+            </label>
+            <select
+              id="edit-category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value as CatalogCategory | '')}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+            >
+              <option value="">{t('productForm.categoryAuto')}</option>
+              <option value="Films">{t('productForm.categoryFilms')}</option>
+              <option value="Tools">{t('productForm.categoryTools')}</option>
+              <option value="Accessories">{t('productForm.categoryAccessories')}</option>
+              <option value="Materials">{t('productForm.categoryMaterials')}</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

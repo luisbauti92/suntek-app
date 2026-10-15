@@ -18,4 +18,5 @@ public record ProductDto(
     int WholesaleQuantity,
     decimal RetailQuantity,
     ProductStatus Status,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    CatalogCategory? Category);

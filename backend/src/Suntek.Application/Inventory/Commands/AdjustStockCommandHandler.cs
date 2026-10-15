@@ -50,7 +50,7 @@ public class AdjustStockCommandHandler(
                 product.Length, product.Width, product.PricePerRoll, product.PricePerMeter,
                 product.RollsPerBox, product.UnitType, product.Manufacturer, product.ManufacturerPriceUsd,
                 product.WholesaleQuantity, product.RetailQuantity,
-                product.Status, product.CreatedAt);
+                product.Status, product.CreatedAt, product.Category);
         }, ct);
 
         return resultDto;
