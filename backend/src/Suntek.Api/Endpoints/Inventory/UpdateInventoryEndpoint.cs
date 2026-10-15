@@ -1,5 +1,6 @@
 using FastEndpoints;
 using MediatR;
+using Suntek.Application.Common.Models;
 using Suntek.Application.Inventory.Commands;
 using Suntek.Domain.Enums;
 
@@ -14,6 +15,11 @@ public class UpdateInventoryRequest
     public int RollsPerBox { get; set; }
     public decimal PricePerRoll { get; set; }
     public decimal PricePerMeter { get; set; }
+    /// <summary>
+    /// Categoría comercial para el catálogo. Omitirlo (o null) deja la categoría como estaba;
+    /// una instancia con <see cref="CatalogCategoryUpdate.Value"/> nulo la pone en automática.
+    /// </summary>
+    public CatalogCategoryUpdate? Category { get; set; }
     /// <summary>Fabricante o proveedor. Omitirlo deja el dato como estaba.</summary>
     public string? Manufacturer { get; set; }
     /// <summary>Precio referencial del fabricante en dólares. Sólo un Admin puede leerlo o escribirlo.</summary>
@@ -32,6 +38,7 @@ public class UpdateInventoryResponse
     public decimal PricePerMeter { get; set; }
     public int RollsPerBox { get; set; }
     public UnitType UnitType { get; set; }
+    public CatalogCategory? Category { get; set; }
     public string? Manufacturer { get; set; }
     public decimal? ManufacturerPriceUsd { get; set; }
     public int WholesaleQuantity { get; set; }
@@ -53,6 +60,7 @@ public class UpdateInventoryEndpoint(IMediator mediator) : Endpoint<UpdateInvent
         var id = Route<int>("id");
         var result = await mediator.Send(
             new UpdateProductCommand(id, req.Sku, req.Name, req.Length, req.Width, req.RollsPerBox, req.PricePerRoll, req.PricePerMeter,
+                req.Category,
                 ProductCost.ManufacturerFrom(User, req.Manufacturer, req.ManufacturerPriceUsd)),
             ct);
 
@@ -83,6 +91,7 @@ public class UpdateInventoryEndpoint(IMediator mediator) : Endpoint<UpdateInvent
             PricePerMeter = p.PricePerMeter,
             RollsPerBox = p.RollsPerBox,
             UnitType = p.UnitType,
+            Category = p.Category,
             Manufacturer = p.Manufacturer,
             ManufacturerPriceUsd = ProductCost.VisiblePrice(User, p.ManufacturerPriceUsd),
             WholesaleQuantity = p.WholesaleQuantity,

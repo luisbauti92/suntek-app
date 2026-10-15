@@ -3,6 +3,9 @@ bin/
 obj/
 **/bin/
 **/obj/
+# MSBuild BuildHost en macOS crea carpetas con backslash literal (bin\Debug) que bin/ no matchea
+**/bin\\Debug/
+**/obj\\Debug/
 *.user
 *.userosscache
 *.sln.docstates

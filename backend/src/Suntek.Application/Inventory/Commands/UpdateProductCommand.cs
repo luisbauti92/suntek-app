@@ -12,4 +12,5 @@ public record UpdateProductCommand(
     int RollsPerBox,
     decimal PricePerRoll,
     decimal PricePerMeter,
+    CatalogCategoryUpdate? Category = null,
     ManufacturerInfo? Manufacturer = null) : IRequest<UpdateProductResult>;

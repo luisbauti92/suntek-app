@@ -40,7 +40,8 @@ public class RegisterStockCommandHandler(
             return new ProductDto(existing.Id, existing.Sku, existing.Name, existing.Quantity,
                 existing.Length, existing.Width, existing.PricePerRoll, existing.PricePerMeter,
                 existing.RollsPerBox, existing.UnitType, existing.Manufacturer, existing.ManufacturerPriceUsd,
-                existing.WholesaleQuantity, existing.RetailQuantity, existing.Status, existing.CreatedAt);
+                existing.WholesaleQuantity, existing.RetailQuantity, existing.Status, existing.CreatedAt,
+                existing.Category);
         }
 
         var product = new Product
@@ -54,6 +55,7 @@ public class RegisterStockCommandHandler(
             PricePerMeter = Round2(request.PricePerMeter),
             RollsPerBox = request.RollsPerBox,
             UnitType = request.UnitType,
+            Category = request.Category,
             Manufacturer = CleanName(request.Manufacturer?.Name),
             ManufacturerPriceUsd = request.Manufacturer?.PriceUsd is decimal usd ? Round2(usd) : null,
             WholesaleQuantity = request.Quantity,
@@ -75,6 +77,7 @@ public class RegisterStockCommandHandler(
         return new ProductDto(added.Id, added.Sku, added.Name, added.Quantity,
             added.Length, added.Width, added.PricePerRoll, added.PricePerMeter,
             added.RollsPerBox, added.UnitType, added.Manufacturer, added.ManufacturerPriceUsd,
-            added.WholesaleQuantity, added.RetailQuantity, added.Status, added.CreatedAt);
+            added.WholesaleQuantity, added.RetailQuantity, added.Status, added.CreatedAt,
+            added.Category);
     }
 }

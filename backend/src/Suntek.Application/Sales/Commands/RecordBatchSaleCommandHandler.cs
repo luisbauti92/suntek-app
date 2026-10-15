@@ -159,7 +159,7 @@ public class RecordBatchSaleCommandHandler(
                 p.Id, p.Sku, p.Name, p.Quantity, p.Length, p.Width,
                 p.PricePerRoll, p.PricePerMeter, p.RollsPerBox, p.UnitType,
                 p.Manufacturer, p.ManufacturerPriceUsd,
-                p.WholesaleQuantity, p.RetailQuantity, p.Status, p.CreatedAt));
+                p.WholesaleQuantity, p.RetailQuantity, p.Status, p.CreatedAt, p.Category));
         }
 
         return new RecordBatchSaleResult(true, null, ticketCode, Round2(grandTotal), updatedProductDtos);
