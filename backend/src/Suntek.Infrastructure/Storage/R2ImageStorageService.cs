@@ -1,3 +1,4 @@
+using System.Net;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Suntek.Application.Common.Interfaces;
@@ -72,6 +73,44 @@ public sealed class R2ImageStorageService : IImageStorageService, IDisposable
     {
         await Client.DeleteObjectAsync(
             new DeleteObjectRequest { BucketName = _options.BucketName, Key = objectKey }, ct);
+    }
+
+    /// <summary>
+    /// Read-only probe: lists a single key to verify endpoint, bucket and credentials together.
+    /// </summary>
+    public async Task<ImageStorageProbeResult> ProbeAsync(CancellationToken ct = default)
+    {
+        if (!_options.IsConfigured)
+            return new ImageStorageProbeResult(ImageStorageProbeStatus.NotConfigured, "Cloudflare R2 settings are incomplete.");
+
+        try
+        {
+            await Client.ListObjectsV2Async(
+                new ListObjectsV2Request { BucketName = _options.BucketName, MaxKeys = 1 }, ct);
+
+            return new ImageStorageProbeResult(ImageStorageProbeStatus.Healthy);
+        }
+        catch (AmazonS3Exception ex) when (ex.StatusCode == HttpStatusCode.Forbidden)
+        {
+            // A token scoped to object read/write may legitimately lack s3:ListBucket. The
+            // credentials still work, so this is not a failure.
+            return new ImageStorageProbeResult(
+                ImageStorageProbeStatus.Degraded,
+                "Credentials lack s3:ListBucket, so the bucket could not be listed.");
+        }
+        catch (AmazonS3Exception ex)
+        {
+            return new ImageStorageProbeResult(
+                ImageStorageProbeStatus.Unhealthy,
+                $"R2 rejected the request: {ex.StatusCode} ({ex.ErrorCode}).");
+        }
+        catch (Exception ex)
+        {
+            // The exception type only: messages from the SDK may embed the endpoint URL.
+            return new ImageStorageProbeResult(
+                ImageStorageProbeStatus.Unhealthy,
+                $"Could not reach R2: {ex.GetType().Name}.");
+        }
     }
 
     private IAmazonS3 Client => _client ?? throw new InvalidOperationException(

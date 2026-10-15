@@ -46,4 +46,10 @@ public sealed class FakeImageStorage : IImageStorageService
         _objects.Remove(objectKey);
         return Task.CompletedTask;
     }
+
+    /// <summary>Result the health probe reports; tests override it to simulate degraded/unhealthy.</summary>
+    public ImageStorageProbeResult ProbeResult { get; set; } = new(ImageStorageProbeStatus.Healthy);
+
+    public Task<ImageStorageProbeResult> ProbeAsync(CancellationToken ct = default) =>
+        Task.FromResult(ProbeResult);
 }

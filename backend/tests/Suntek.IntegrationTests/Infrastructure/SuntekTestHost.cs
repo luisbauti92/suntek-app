@@ -51,6 +51,13 @@ public sealed class SuntekTestHost : IAsyncLifetime
         Environment.SetEnvironmentVariable("Jwt__Audience", "suntek-tests");
         Environment.SetEnvironmentVariable("Jwt__ExpirationMinutes", "60");
         Environment.SetEnvironmentVariable("Catalog__ApiKey", "integration-tests-catalog-key");
+        // Populate the R2 settings so config-dependent code paths are exercised; the storage
+        // service itself is always replaced by the in-memory fake.
+        Environment.SetEnvironmentVariable("CloudflareR2__BucketName", "suntek-catalog-images");
+        Environment.SetEnvironmentVariable("CloudflareR2__Endpoint", "https://test-account.r2.cloudflarestorage.com");
+        Environment.SetEnvironmentVariable("CloudflareR2__AccessKeyId", "test-access-key-id");
+        Environment.SetEnvironmentVariable("CloudflareR2__SecretAccessKey", "test-secret-access-key");
+        Environment.SetEnvironmentVariable("CloudflareR2__PublicBaseUrl", FakeImageStorage.PublicBaseUrl);
         Environment.SetEnvironmentVariable("AllowedOrigins", "http://localhost");
         // Sin esto, EF loguea cada comando SQL y el resultado de los tests queda ilegible.
         Environment.SetEnvironmentVariable("Logging__LogLevel__Default", "Warning");
