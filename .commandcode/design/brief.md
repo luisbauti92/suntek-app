@@ -220,10 +220,17 @@ Three deliberate, distinct systems. Do not blend them.
   specifications, metadata and prices use the strong neutral text hierarchy
   (`--text-strong` / `--text`) unless there is a specific semantic reason for brand blue.
   Blue stays an accent; it is never the default text color.
-- System font stack (no Inter here). Clean neutral/light page background; no decorative
-  gradient.
+- System font stack (no Inter here). The page is light/white, except for a dark navy
+  **hero band** (owner-confirmed exception — see composition below).
 - Bilingual: Spanish default, English via a header toggle (`es` / `en`).
-- Surfaces are white and airy.
+- Surfaces are white and airy; spacing is compact and restrained.
+- **Page composition (owner-confirmed, Oct 2026 — via Codex/GPT-6.1 Sol):** a dark navy hero
+  (`#020d23 → #0c2944`, subtle) with title ≈38px desktop / 26px mobile, tight leading, slight
+  negative tracking, and a compact benefit row; a restrained media panel sits on the right.
+  Below it, three compact category cards (small image thumb + name/blurb **below**, not
+  overlaid; active = light brand tint). Catalog area: **210px filter sidebar + 4-column
+  product grid**. Product card is dense — media ≈1.75:1, name ≈14px, price ≈18px bold,
+  full-width WhatsApp CTA ≈38px. Gaps ≈12px.
 - **Media behavior (final, owner-approved):**
   - When `imageUrl` exists, **real product photography is the visual hero** and occupies the
     media area.

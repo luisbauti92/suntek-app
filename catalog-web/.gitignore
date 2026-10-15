@@ -27,3 +27,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Prototipo visual local (igual que frontend/design-preview): no se versiona
+design-preview/

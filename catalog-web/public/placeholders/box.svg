@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Imagen próximamente">
+  <rect width="800" height="600" fill="#f5f7fc"/>
+  <g fill="none" stroke="#002d9c" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" opacity="0.45">
+    <path d="M320 318 h160 v150 h-160 z"/>
+    <path d="M320 318 l34 -34 h160 l-34 34 z"/>
+  </g>
+
+</svg>

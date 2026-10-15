@@ -1,66 +1,29 @@
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../contexts/useLanguage';
-import type { CatalogCategory } from '../types/catalog';
-
+import { CATEGORIES, type CatalogCategory } from '../types/catalog';
 interface CategoryRailProps {
-  /** Only the categories actually present in the loaded data. */
   available: CatalogCategory[];
   selected: Set<CatalogCategory>;
   onToggle: (category: CatalogCategory) => void;
   onSelectAll: () => void;
+  variant?: 'editorial' | 'filters';
 }
-
-function pillClass(active: boolean): string {
-  return [
-    'inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border px-4 text-sm font-semibold transition',
-    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]',
-    active
-      ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
-      : 'border-[var(--border)] bg-white text-[var(--text)] hover:border-[var(--border-strong)] hover:text-[var(--text-h)]',
-  ].join(' ');
-}
-
-export function CategoryRail({
-  available,
-  selected,
-  onToggle,
-  onSelectAll,
-}: CategoryRailProps) {
+const images: Record<CatalogCategory,string> = { films:'/editorial/peliculas.webp', tools:'/editorial/herramientas.webp', accessories:'/editorial/accesorios.webp', materials:'/editorial/materials.webp' };
+export function CategoryRail({ available, selected, onToggle, onSelectAll, variant = 'editorial' }: CategoryRailProps) {
   const { t } = useLanguage();
-
-  // A rail with a single real category carries no information: "Todos / Películas" is noise.
-  if (available.length <= 1) return null;
-
-  const allActive = selected.size === 0;
-
-  return (
-    <nav aria-label={t('categories.title')}>
-      <ul className="custom-scrollbar flex gap-2 overflow-x-auto pb-2">
-        <li>
-          <button
-            type="button"
-            aria-pressed={allActive}
-            onClick={onSelectAll}
-            className={pillClass(allActive)}
-          >
-            {t('categories.all')}
-          </button>
-        </li>
-        {available.map((category) => {
-          const active = selected.has(category);
-          return (
-            <li key={category}>
-              <button
-                type="button"
-                aria-pressed={active}
-                onClick={() => onToggle(category)}
-                className={pillClass(active)}
-              >
-                {t(`categories.${category}`)}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
-  );
+  if (variant === 'filters') return <fieldset className="category-filter">
+    <legend>{t('categories.title')}<ChevronDown size={14} aria-hidden /></legend>
+    <button type="button" aria-pressed={selected.size === 0} onClick={onSelectAll}><span className="filter-check" aria-hidden />{t('categories.all')}</button>
+    {available.map(category => <button key={category} type="button" aria-pressed={selected.has(category)} onClick={() => onToggle(category)}>
+      <span className="filter-check" aria-hidden />{t(`categories.${category}`)}
+    </button>)}
+  </fieldset>;
+  return <nav id="materials" className="catalog-categories" aria-label={t('categories.browse')}>
+    {CATEGORIES.map(category => <button key={category} type="button" className="category-card"
+      aria-pressed={selected.has(category)} onClick={() => onToggle(category)}>
+      <img src={images[category]} alt="" width="768" height="512" loading="lazy" decoding="async" />
+      <div><strong>{t(`categories.${category}`)}</strong><span>{t(`categoryDescriptions.${category}`)}</span>
+        <small>{t('categories.explore')}<ArrowRight size={13} aria-hidden /></small></div>
+    </button>)}
+  </nav>;
 }

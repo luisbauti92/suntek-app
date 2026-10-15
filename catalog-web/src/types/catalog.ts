@@ -3,9 +3,9 @@
  * Name, Sku, PricePerRoll, PricePerMeter, Quantity, Width, Length, UnitType (+ rolls/box,
  * stock splits for UI).
  */
-export type CatalogCategory = 'films' | 'tools' | 'accessories';
+export type CatalogCategory = 'films' | 'tools' | 'accessories' | 'materials';
 
-export const CATEGORIES: CatalogCategory[] = ['films', 'tools', 'accessories'];
+export const CATEGORIES: CatalogCategory[] = ['films', 'tools', 'accessories', 'materials'];
 
 export type UnitType = 'Meters' | 'Units' | 0 | 1;
 

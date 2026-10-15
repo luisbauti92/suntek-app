@@ -1,36 +1,18 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/useLanguage';
 import type { CatalogProduct } from '../types/catalog';
-
-interface MaterialMediaProps {
-  product: CatalogProduct;
-}
-
-/**
- * Media area for a product.
- *
- * With real photography (`imageUrl` present) the image occupies the media area and becomes
- * the visual hero. With no photograph, the media area is not rendered at all: the card falls
- * back to a compact typographic specification block instead of reserving an empty surface.
- * The same applies if a provided image fails to load.
- */
+interface MaterialMediaProps { product: CatalogProduct; }
+/** Editorial images are never used here. Missing or broken product photos use a neutral placeholder. */
 export function MaterialMedia({ product }: MaterialMediaProps) {
   const { t } = useLanguage();
-  const [failed, setFailed] = useState(false);
-
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const src = product.imageUrl?.trim() ?? '';
-  if (src.length === 0 || failed) return null;
-
-  return (
-    <div className="relative aspect-[4/3] overflow-hidden bg-[var(--surface-muted)]">
-      <img
-        src={src}
-        alt={t('product.mediaAlt', { name: product.name, sku: product.sku })}
-        className="h-full w-full object-cover"
-        loading="lazy"
-        decoding="async"
-        onError={() => setFailed(true)}
-      />
-    </div>
-  );
+  const hasPhoto = Boolean(src) && failedSrc !== src;
+  return <div className={`product-media${hasPhoto ? '' : ' is-placeholder'}`}>
+    {hasPhoto ? <img src={src} alt={t('product.mediaAlt', { name:product.name, sku:product.sku })}
+      loading="lazy" decoding="async" onError={() => setFailedSrc(src)} /> : <>
+      <img src={product.category === 'films' ? '/placeholders/roll.svg' : '/placeholders/box.svg'} alt="" aria-hidden="true" />
+      <span>{t('product.photoMissing')}</span>
+    </>}
+  </div>;
 }
