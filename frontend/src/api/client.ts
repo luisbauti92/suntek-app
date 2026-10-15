@@ -144,6 +144,8 @@ export interface InventoryItemDto {
   retailQuantity: number;
   status: ProductStatus;
   createdAt: string;
+  /** URL de la imagen principal, o null si el producto aún no tiene imágenes. */
+  primaryImageUrl: string | null;
 }
 
 export interface RegisterStockRequest {
@@ -217,6 +219,53 @@ export const inventoryApi = {
     apiClient.post<InventoryItemDto>(`/inventory/${productId}/open-box`, {}),
   adjustStock: (data: AdjustStockRequest) =>
     apiClient.post<AdjustStockResponse>('/inventory/adjust-stock', data),
+};
+
+// Product images (public catalog gallery)
+export interface ProductImageDto {
+  id: number;
+  productId: number;
+  objectKey: string;
+  url: string;
+  contentType: string;
+  fileSizeBytes: number;
+  originalFileName: string | null;
+  sortOrder: number;
+  isPrimary: boolean;
+  createdAt: string;
+}
+
+/** Accepted image MIME types; the API re-checks the real file bytes. */
+export const IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp';
+/** Client-side guard only, for fast feedback; the API enforces its own configurable limit. */
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
+function imageFormData(file: File): FormData {
+  const data = new FormData();
+  // The API binds this field by name; the object key is generated server-side from the bytes.
+  data.append('File', file);
+  return data;
+}
+
+export const productImagesApi = {
+  list: (productId: number) =>
+    apiClient.get<ProductImageDto[]>(`/products/${productId}/images`),
+  upload: (productId: number, file: File, onProgress?: (percent: number) => void) =>
+    apiClient.post<ProductImageDto>(`/products/${productId}/images`, imageFormData(file), {
+      onUploadProgress: (event) => {
+        if (onProgress && event.total) {
+          onProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      },
+    }),
+  replace: (productId: number, imageId: number, file: File) =>
+    apiClient.put<ProductImageDto>(`/products/${productId}/images/${imageId}`, imageFormData(file)),
+  remove: (productId: number, imageId: number) =>
+    apiClient.delete<void>(`/products/${productId}/images/${imageId}`),
+  setPrimary: (productId: number, imageId: number) =>
+    apiClient.patch<ProductImageDto>(`/products/${productId}/images/${imageId}/primary`, {}),
+  reorder: (productId: number, imageIds: number[]) =>
+    apiClient.patch<void>(`/products/${productId}/images/order`, { imageIds }),
 };
 
 // Sales

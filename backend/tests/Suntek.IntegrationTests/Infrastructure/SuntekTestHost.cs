@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Suntek.Application.Common.Interfaces;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -18,6 +22,9 @@ public sealed class SuntekTestHost : IAsyncLifetime
     private SuntekApiFactory _factory = null!;
 
     public IServiceProvider Services => _factory.Services;
+
+    /// <summary>The storage fake the API is running against, so tests can inspect stored objects.</summary>
+    public FakeImageStorage Storage => _factory.Storage;
 
     public HttpClient CreateClient() => _factory.CreateClient();
 
@@ -61,7 +68,20 @@ public sealed class SuntekTestHost : IAsyncLifetime
     }
 }
 
-public sealed class SuntekApiFactory : WebApplicationFactory<Program>;
+public sealed class SuntekApiFactory : WebApplicationFactory<Program>
+{
+    public FakeImageStorage Storage { get; } = new();
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureServices(services =>
+        {
+            // No test may reach live R2: the real storage service is always replaced.
+            services.RemoveAll<IImageStorageService>();
+            services.AddSingleton<IImageStorageService>(Storage);
+        });
+    }
+}
 
 [CollectionDefinition(Name)]
 public sealed class IntegrationCollection : ICollectionFixture<SuntekTestHost>

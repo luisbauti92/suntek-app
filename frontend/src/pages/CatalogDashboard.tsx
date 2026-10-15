@@ -3,11 +3,11 @@ import { ChevronLeft, ChevronRight, Image as ImageIcon, Package, Tag } from 'luc
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { inventoryApi, type CatalogCategory, type InventoryItemDto } from '../api/client';
+import { inventoryApi, productImagesApi, type CatalogCategory, type InventoryItemDto } from '../api/client';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { ProductImagesModal } from '../components/ProductImagesModal';
 import { Button } from '../components/ui/Button';
 import { MetricStrip } from '../components/ui/Stat';
-import { Panel } from '../components/ui/Panel';
 
 /**
  * Gestión del catálogo público: clasificación por las cuatro categorías fijas. La asignación
@@ -105,6 +105,7 @@ export function CatalogDashboard({ search }: { search: string }) {
   const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [assigningId, setAssigningId] = useState<number | null>(null);
+  const [imagesProduct, setImagesProduct] = useState<InventoryItemDto | null>(null);
 
   // El catálogo público sólo expone productos activos, así que la gestión de categorías
   // trabaja sobre el mismo conjunto. El estado del fetch se resuelve en callbacks async.
@@ -227,6 +228,28 @@ export function CatalogDashboard({ search }: { search: string }) {
       setBulkLoading(false);
     }
   }
+
+  const openImages = useCallback((item: InventoryItemDto) => {
+    setImagesProduct(item);
+  }, []);
+
+  /**
+   * After a gallery mutation, refresh just this row's primary thumbnail instead of reloading the
+   * whole table (a full reload would replace the list with the loading skeleton).
+   */
+  const handleImagesChanged = useCallback(async () => {
+    if (!imagesProduct) return;
+    try {
+      const res = await productImagesApi.list(imagesProduct.id);
+      const primary = res.data.find((image) => image.isPrimary) ?? res.data[0] ?? null;
+      const url = primary?.url ?? null;
+      setItems((prev) =>
+        prev.map((row) => (row.id === imagesProduct.id ? { ...row, primaryImageUrl: url } : row))
+      );
+    } catch {
+      // The modal already surfaced the mutation result; a stale thumbnail is not worth an error.
+    }
+  }, [imagesProduct]);
 
   return (
     <div className="space-y-6">
@@ -351,6 +374,7 @@ export function CatalogDashboard({ search }: { search: string }) {
                         <th className="px-4 py-3">{t('dashboard.name')}</th>
                         <th className="px-4 py-3">{t('catalog.colUnit')}</th>
                         <th className="px-4 py-3">{t('erp.colCategory')}</th>
+                        <th className="px-4 py-3">{t('catalog.colImages')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -388,6 +412,29 @@ export function CatalogDashboard({ search }: { search: string }) {
                                 label={categoryLabel(t, item.category)}
                               />
                             )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={() => openImages(item)}
+                              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 shadow-sm transition hover:border-brand-300 hover:text-brand-700"
+                            >
+                              <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-slate-400 ring-1 ring-slate-200">
+                                {item.primaryImageUrl ? (
+                                  <img
+                                    src={item.primaryImageUrl}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="h-full w-full object-cover"
+                                    onError={(e) => e.currentTarget.classList.add('hidden')}
+                                  />
+                                ) : (
+                                  <ImageIcon className="h-3.5 w-3.5" aria-hidden />
+                                )}
+                              </span>
+                              {isAdmin ? t('catalog.images.manage') : t('catalog.images.view')}
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -429,6 +476,27 @@ export function CatalogDashboard({ search }: { search: string }) {
                               />
                             )}
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => openImages(item)}
+                            className="mt-2 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 shadow-sm transition hover:border-brand-300 hover:text-brand-700"
+                          >
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-slate-400 ring-1 ring-slate-200">
+                              {item.primaryImageUrl ? (
+                                <img
+                                  src={item.primaryImageUrl}
+                                  alt=""
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => e.currentTarget.classList.add('hidden')}
+                                />
+                              ) : (
+                                <ImageIcon className="h-3.5 w-3.5" aria-hidden />
+                              )}
+                            </span>
+                            {isAdmin ? t('catalog.images.manage') : t('catalog.images.view')}
+                          </button>
                         </div>
                       </div>
                     </li>
@@ -498,24 +566,14 @@ export function CatalogDashboard({ search }: { search: string }) {
         isLoading={bulkLoading}
       />
 
-      <Panel
-        title={t('catalog.mediaTitle')}
-        action={
-          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-            {t('catalog.mediaComingSoon')}
-          </span>
-        }
-      >
-        <div className="flex items-center gap-3 rounded-lg border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6">
-          <span
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-slate-400 ring-1 ring-slate-200"
-            title={t('catalog.imagePlaceholder')}
-          >
-            <ImageIcon className="h-5 w-5" aria-hidden />
-          </span>
-          <p className="text-sm text-slate-500">{t('catalog.mediaHint')}</p>
-        </div>
-      </Panel>
+      {imagesProduct && (
+        <ProductImagesModal
+          key={imagesProduct.id}
+          item={imagesProduct}
+          onClose={() => setImagesProduct(null)}
+          onChanged={() => void handleImagesChanged()}
+        />
+      )}
     </div>
   );
 }

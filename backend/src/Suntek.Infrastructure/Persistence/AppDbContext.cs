@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductImage> ProductImages => Set<ProductImage>();
     public DbSet<Sale> Sales => Set<Sale>();
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 
@@ -24,6 +25,14 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Sku).IsUnique();
             e.HasQueryFilter(x => x.Status != ProductStatus.Archived);
+        });
+        modelBuilder.Entity<ProductImage>(e =>
+        {
+            e.ToTable("ProductImages");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.ObjectKey).IsUnique();
+            e.HasIndex(x => new { x.ProductId, x.SortOrder });
+            e.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<Sale>(e =>
         {

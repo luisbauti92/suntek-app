@@ -61,6 +61,17 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedAdminUserAsync(sp);
 }
 
+// Cloudflare R2 is required only for product image storage: a missing configuration is logged
+// instead of aborting startup, so the API keeps serving everything else.
+if (string.IsNullOrWhiteSpace(builder.Configuration["CloudflareR2:BucketName"])
+    || string.IsNullOrWhiteSpace(builder.Configuration["CloudflareR2:Endpoint"])
+    || string.IsNullOrWhiteSpace(builder.Configuration["CloudflareR2:PublicBaseUrl"]))
+{
+    app.Logger.LogWarning(
+        "Cloudflare R2 is not fully configured; product image uploads will fail. " +
+        "Set CloudflareR2:BucketName, CloudflareR2:Endpoint and CloudflareR2:PublicBaseUrl (plus credentials).");
+}
+
 app.UseCors("SuntekPolicy");
 
 app.UseFastEndpoints(c =>
