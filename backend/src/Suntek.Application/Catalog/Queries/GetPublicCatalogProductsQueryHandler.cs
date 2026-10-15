@@ -1,11 +1,15 @@
 using MediatR;
+using Suntek.Application.Common.Interfaces;
 using Suntek.Domain.Entities;
 using Suntek.Domain.Enums;
 using Suntek.Domain.Interfaces;
 
 namespace Suntek.Application.Catalog.Queries;
 
-public class GetPublicCatalogProductsQueryHandler(IProductRepository productRepository)
+public class GetPublicCatalogProductsQueryHandler(
+    IProductRepository productRepository,
+    IProductImageRepository productImageRepository,
+    IImageStorageService imageStorage)
     : IRequestHandler<GetPublicCatalogProductsQuery, IReadOnlyList<PublicCatalogProductDto>>
 {
     public async Task<IReadOnlyList<PublicCatalogProductDto>> Handle(
@@ -15,10 +19,41 @@ public class GetPublicCatalogProductsQueryHandler(IProductRepository productRepo
         // El catálogo público solo expone productos activos. Discontinued y Archived quedan
         // fuera; el filtro global (Status != Archived) se mantiene en el DbContext.
         var products = await productRepository.GetAllAsync(ProductStatus.Active, ct);
-        return products.Select(Map).ToList();
+
+        var imagesByProduct = await LoadPrimaryImageUrlsAsync(products, ct);
+
+        return products
+            .Select(p => Map(p, imagesByProduct.GetValueOrDefault(p.Id)))
+            .ToList();
     }
 
-    private static PublicCatalogProductDto Map(Product p)
+    /// <summary>
+    /// Primary image URL per product. Cards only need the primary image; a product without images
+    /// simply has no entry, so the catalog renders its placeholder.
+    /// </summary>
+    private async Task<Dictionary<int, string>> LoadPrimaryImageUrlsAsync(
+        IReadOnlyList<Product> products, CancellationToken ct)
+    {
+        if (products.Count == 0)
+            return [];
+
+        var productIds = products.Select(p => p.Id).ToList();
+        var images = await productImageRepository.GetByProductIdsAsync(productIds, ct);
+
+        return images
+            .GroupBy(i => i.ProductId)
+            .ToDictionary(
+                group => group.Key,
+                group => imageStorage.BuildPublicUrl(PickPrimary(group).ObjectKey));
+    }
+
+    private static ProductImage PickPrimary(IEnumerable<ProductImage> images)
+    {
+        var ordered = images as IReadOnlyList<ProductImage> ?? images.ToList();
+        return ordered.FirstOrDefault(i => i.IsPrimary) ?? ordered[0];
+    }
+
+    private static PublicCatalogProductDto Map(Product p, string? imageUrl)
     {
         var unit = p.UnitType == UnitType.Meters ? "Meters" : "Units";
         return new PublicCatalogProductDto(
@@ -38,7 +73,7 @@ public class GetPublicCatalogProductsQueryHandler(IProductRepository productRepo
             "SUNTEK",
             MilThickness: null,
             UvProtection: null,
-            ImageUrl: null);
+            ImageUrl: imageUrl);
     }
 
     /// <summary>

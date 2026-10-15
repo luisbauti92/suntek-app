@@ -1,6 +1,10 @@
 server {
     listen 80;
-    
+
+    # Las imágenes de producto se suben al API a través de este proxy. El valor por defecto
+    # de nginx (1 MB) rechazaría cualquier foto de tamaño real con un 413.
+    client_max_body_size 12m;
+
     # El DNS interno de Docker para resolver nombres de contenedores
     resolver 127.0.0.11 valid=30s;
 

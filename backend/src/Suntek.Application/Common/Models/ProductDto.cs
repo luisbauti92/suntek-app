@@ -19,4 +19,6 @@ public record ProductDto(
     decimal RetailQuantity,
     ProductStatus Status,
     DateTime CreatedAt,
-    CatalogCategory? Category);
+    CatalogCategory? Category,
+    /// <summary>Public URL of the product's primary image, or null when it has none.</summary>
+    string? PrimaryImageUrl = null);
