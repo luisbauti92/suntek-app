@@ -58,6 +58,16 @@ public class UpdateInventoryEndpoint(IMediator mediator) : Endpoint<UpdateInvent
     public override async Task HandleAsync(UpdateInventoryRequest req, CancellationToken ct)
     {
         var id = Route<int>("id");
+
+        // Sólo un Admin puede cambiar la categoría explícita. La sola presencia del objeto cuenta
+        // como intento: una instancia con `value` nulo es "volver a automática", y también es un
+        // cambio. Un operador conserva el resto de los campos, pero no este.
+        if (req.Category is not null && !User.IsInRole(AppRoles.Admin))
+        {
+            await Send.ForbiddenAsync(ct);
+            return;
+        }
+
         var result = await mediator.Send(
             new UpdateProductCommand(id, req.Sku, req.Name, req.Length, req.Width, req.RollsPerBox, req.PricePerRoll, req.PricePerMeter,
                 req.Category,

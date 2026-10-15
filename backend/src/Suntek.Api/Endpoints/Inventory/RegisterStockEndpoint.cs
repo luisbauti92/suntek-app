@@ -55,6 +55,15 @@ public class RegisterStockEndpoint(IMediator mediator) : Endpoint<RegisterStockR
 
     public override async Task HandleAsync(RegisterStockRequest req, CancellationToken ct)
     {
+        // La categoría explícita es potestad de Admin también al dar de alta: si se permitiera
+        // aquí, un operador podría clasificar productos sin pasar por la edición. Nulo (automática)
+        // sigue disponible para todos.
+        if (req.Category is not null && !User.IsInRole(AppRoles.Admin))
+        {
+            await Send.ForbiddenAsync(ct);
+            return;
+        }
+
         var result = await mediator.Send(new RegisterStockCommand(
             req.Sku, req.Name, req.Quantity, req.Length, req.Width, req.PricePerRoll, req.PricePerMeter,
             req.RollsPerBox, req.UnitType, req.Category,

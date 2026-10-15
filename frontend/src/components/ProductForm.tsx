@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { inventoryApi, type CatalogCategory, type RegisterStockRequest, type UnitType } from '../api/client';
+import { inventoryApi, type RegisterStockRequest, type UnitType } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { formatBs } from '../utils/formatBs';
@@ -249,29 +249,6 @@ export function ProductForm({ isOpen, onClose, onSuccess }: ProductFormProps) {
                 <option value="Units">{t('productForm.unitUnits')}</option>
               </select>
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-1">
-              {t('productForm.category')}
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={form.category ?? ''}
-              onChange={(e) => {
-                const value = e.target.value as CatalogCategory | '';
-                setForm((prev) => ({ ...prev, category: value === '' ? null : value }));
-                setError('');
-              }}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-            >
-              <option value="">{t('productForm.categoryAuto')}</option>
-              <option value="Films">{t('productForm.categoryFilms')}</option>
-              <option value="Tools">{t('productForm.categoryTools')}</option>
-              <option value="Accessories">{t('productForm.categoryAccessories')}</option>
-              <option value="Materials">{t('productForm.categoryMaterials')}</option>
-            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

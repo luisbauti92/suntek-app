@@ -14,6 +14,7 @@ import { AppShell } from '../components/layout/AppShell';
 import type { ErpNavId } from '../components/layout/erpNav';
 import { KpiStrip } from '../components/dashboard/KpiStrip';
 import { UsersPanel } from '../components/users/UsersPanel';
+import { CatalogDashboard } from './CatalogDashboard';
 import { StockBadge } from '../components/StockBadge';
 import {
   StorefrontRowActionsDropdown,
@@ -218,6 +219,7 @@ export function InventoryDashboard() {
   const [inventoryPageSize, setInventoryPageSize] = useState(25);
   const [inventoryStatusFilter, setInventoryStatusFilter] = useState<InventoryStatusFilter>('active');
   const [userSearch, setUserSearch] = useState('');
+  const [catalogSearch, setCatalogSearch] = useState('');
   const [directoryUsers, setDirectoryUsers] = useState<UserListItemDto[]>([]);
   const [directoryLoading, setDirectoryLoading] = useState(() =>
     Boolean(user?.roles?.includes('Admin'))
@@ -437,12 +439,25 @@ export function InventoryDashboard() {
     };
   }, [items, directoryUsers, isAdmin, t]);
 
-  const headerSearchValue = activeNav === 'users' ? userSearch : inventorySearch;
-  const onHeaderSearchChange = activeNav === 'users' ? setUserSearch : handleInventorySearchChange;
+  const headerSearchValue =
+    activeNav === 'users' ? userSearch : activeNav === 'catalog' ? catalogSearch : inventorySearch;
+  const onHeaderSearchChange =
+    activeNav === 'users'
+      ? setUserSearch
+      : activeNav === 'catalog'
+        ? setCatalogSearch
+        : handleInventorySearchChange;
   const headerSearchEnabled =
-    activeNav === 'dashboard' || activeNav === 'warehouse' || activeNav === 'users';
+    activeNav === 'dashboard' ||
+    activeNav === 'warehouse' ||
+    activeNav === 'catalog' ||
+    activeNav === 'users';
   const headerSearchPlaceholder =
-    activeNav === 'users' ? t('erp.usersSearchPlaceholder') : t('dashboard.inventorySearchPlaceholder');
+    activeNav === 'users'
+      ? t('erp.usersSearchPlaceholder')
+      : activeNav === 'catalog'
+        ? t('catalog.searchPlaceholder')
+        : t('dashboard.inventorySearchPlaceholder');
 
   function navigateNav(id: ErpNavId) {
     setActiveNav(id);
@@ -1082,6 +1097,12 @@ export function InventoryDashboard() {
       {activeNav === 'users' && !isAdmin && (
         <div className="mx-auto max-w-xl rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm text-slate-600">{t('erp.usersAdminOnly')}</p>
+        </div>
+      )}
+
+      {activeNav === 'catalog' && (
+        <div className="mx-auto max-w-7xl">
+          <CatalogDashboard search={catalogSearch} />
         </div>
       )}
 

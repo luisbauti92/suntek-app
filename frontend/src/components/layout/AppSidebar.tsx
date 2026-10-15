@@ -5,6 +5,7 @@ import {
   PanelLeft,
   Settings,
   ShoppingCart,
+  Tags,
   Users,
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -35,6 +36,7 @@ export function AppSidebar({
   const items: { id: ErpNavId; icon: typeof LayoutDashboard; labelKey: string }[] = [
     { id: 'dashboard', icon: LayoutDashboard, labelKey: 'erp.navDashboard' },
     { id: 'warehouse', icon: Package, labelKey: 'erp.navWarehouse' },
+    { id: 'catalog', icon: Tags, labelKey: 'erp.navCatalog' },
     { id: 'sales', icon: ShoppingCart, labelKey: 'erp.navSales' },
     ...(isAdmin ? ([{ id: 'users', icon: Users, labelKey: 'erp.navUsers' }] as const) : []),
     { id: 'settings', icon: Settings, labelKey: 'erp.navSettings' },
