@@ -191,6 +191,17 @@ export interface AdjustStockResponse {
   retailQuantity: number;
 }
 
+export interface AssignCategoryBulkRequest {
+  productIds: number[];
+  /** null = volver a automática (sin categoría explícita). */
+  category: CatalogCategory | null;
+}
+
+export interface AssignCategoryBulkResponse {
+  updatedCount: number;
+  category: CatalogCategory | null;
+}
+
 export const inventoryApi = {
   list: (status: InventoryStatusFilter = 'active') =>
     apiClient.get<InventoryItemDto[]>('/inventory', { params: { status } }),
@@ -200,6 +211,8 @@ export const inventoryApi = {
     apiClient.put<InventoryItemDto>(`/inventory/${id}`, data),
   updateStatus: (id: number, status: ProductStatus) =>
     apiClient.patch<void>(`/products/${id}/status`, { status }),
+  assignCategoryBulk: (data: AssignCategoryBulkRequest) =>
+    apiClient.patch<AssignCategoryBulkResponse>('/products/bulk-category', data),
   openBox: (productId: number) =>
     apiClient.post<InventoryItemDto>(`/inventory/${productId}/open-box`, {}),
   adjustStock: (data: AdjustStockRequest) =>

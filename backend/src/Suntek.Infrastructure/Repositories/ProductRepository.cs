@@ -19,6 +19,14 @@ public class ProductRepository(AppDbContext db) : IProductRepository
         return await query.OrderBy(x => x.Sku).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<Product>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+            return [];
+
+        return await db.Products.Where(x => ids.Contains(x.Id)).ToListAsync(ct);
+    }
+
     public async Task<Product?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         return await db.Products.FirstOrDefaultAsync(x => x.Id == id, ct);
@@ -51,6 +59,12 @@ public class ProductRepository(AppDbContext db) : IProductRepository
     public async Task UpdateAsync(Product product, CancellationToken ct = default)
     {
         db.Products.Update(product);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateRangeAsync(IEnumerable<Product> products, CancellationToken ct = default)
+    {
+        db.Products.UpdateRange(products);
         await db.SaveChangesAsync(ct);
     }
 
