@@ -25,6 +25,8 @@ public class ProductDto
     public decimal RetailQuantity { get; set; }
     public ProductStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
+    /// <summary>URL pública de la imagen principal del producto, o null si no tiene imágenes.</summary>
+    public string? PrimaryImageUrl { get; set; }
 }
 
 public class ListInventoryRequest
@@ -77,7 +79,8 @@ public class ListInventoryEndpoint(IMediator mediator) : Endpoint<ListInventoryR
                 WholesaleQuantity = p.WholesaleQuantity,
                 RetailQuantity = p.RetailQuantity,
                 Status = p.Status,
-                CreatedAt = p.CreatedAt
+                CreatedAt = p.CreatedAt,
+                PrimaryImageUrl = p.PrimaryImageUrl
             })
             .ToList();
         await Send.OkAsync(Response, ct);
